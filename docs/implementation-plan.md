@@ -1,0 +1,116 @@
+# Implementation Plan
+
+The PRD phases are re-sequenced for bring-your-own compute, branding and variants. Each milestone ends in a working, tested state (PRD §17.3). The **CTO demo is reachable at the end of M5**.
+
+| # | Milestone | Outcome | Est.* | Status |
+|---|---|---|---|---|
+| M0 | Foundations | Repo, tooling, Manim + FFmpeg verified locally **and on Colab**, memory benchmark | 2–3 d | ⏳ docs done |
+| M1 | Vertical slice | `pnp render` CLI + Agent + bare Studio plays a rendered scene | 4–5 d | ☐ |
+| M2 | Authoring workflow | Monaco, file tree, scene discovery, live logs, draft/preview/final, revisions | 5–7 d | ☐ |
+| M3 | Jobs and assembly | SQLite queue, DAG, cancel/retry/recovery, compositions, concat, ffprobe validation, 30-min limit | 5–7 d | ☐ |
+| M4 | Brand kits | Brand YAML, logo upload, overlay compositor, 9-point placement editor, theme via `pnp.ctx` | 4–5 d | ☐ |
+| M5 | Formats and variants | 16:9 / 9:16 / 1:1, matrix + plan preview + dedupe, variant gallery | 5–6 d | ☐ |
+| — | **CTO demo** | Script below | — | |
+| M6 | Colab + Docker + hardening | Polished notebook, Docker image, security test suite, resource governor tuning | 5–7 d | ☐ |
+| M7 | AI assist (P1) | Claude-backed generate/modify/debug with diff review | 5–7 d | ☐ |
+| M8 | Server mode (post-MVP) | Postgres/S3/queue adapters, sandboxed workers, ReelMVP integration | TBD | ☐ |
+
+\* Rough estimates for one engineer working with Claude Code. They will be re-estimated after M0, once render benchmarks exist. They are not commitments.
+
+---
+
+## M0: Foundations
+
+- [ ] `uv` workspace with `packages/{core,agent,sdk}`, Python 3.12 pinned (`.python-version`)
+- [ ] `studio/` Vite + React + TS, pnpm
+- [ ] ruff, pyright, pytest, eslint, vitest; `make check` runs everything
+- [ ] Pin Manim CE exact version. Verify `manim render` on: this machine, Colab, and the Docker base image
+- [ ] Verify FFmpeg overlay + concat + ffprobe on all three
+- [ ] **Benchmark:** peak RSS and wall time for 3 reference scenes (text, MathTex, 3D) × 3 qualities × 2 formats on local and Colab → seeds `per_job_budget`
+- [ ] Decide the Colab UI exposure method after checking current Colab terms ([ADR-0005](decisions/0005-colab-runtime-mode.md))
+- [ ] `examples/pythagoras` starter project (3 scenes, 2 brands), which doubles as the render test fixture
+
+**Exit:** `make check` is green; the benchmark table is committed to `docs/benchmarks.md`.
+
+## M1: Vertical slice
+
+- [ ] `pnp_core`: project loader (`pnp.yaml`), `ManimEngine.render_unit()` subprocess with timeout + kill-tree, ffprobe validator
+- [ ] `pnp render <project> --scene X --quality draft` → MP4
+- [ ] `pnp_agent`: FastAPI, token auth, `GET /agent`, `POST /renders` (run inline in a background task for now), artifact stream
+- [ ] Studio: token pairing, one button "Render", `<video>` player
+- [ ] `pnp studio` serves the built Studio and opens the browser
+
+**Exit:** create project → render → watch video in the browser (PRD Phase 1 exit). It also works in a throwaway Colab notebook.
+
+## M2: Authoring workflow
+
+- [ ] Monaco editor, tabs, unsaved indicator, save with etag
+- [ ] File tree, multi-file projects with imports
+- [ ] AST scene discovery with clear errors
+- [ ] Live log streaming over `WS /events`; Python tracebacks mapped to file:line links
+- [ ] Draft / preview / final quality selector
+- [ ] Immutable revision snapshots, with renders pinned to a revision
+- [ ] Local terminal panel (xterm.js + PTY), loopback only
+
+## M3: Jobs and assembly
+
+- [ ] `SQLiteQueue`: leases, priorities, DAG dependencies, attempts
+- [ ] Cancel (kill tree), retry, crash recovery on start (`interrupted`)
+- [ ] Compositions in `pnp.yaml`, plus an ordered clip list in the UI
+- [ ] Compositor: concat (copy when possible, otherwise encode); validator rules 1–5
+- [ ] Duration limit (AC-006); preserve previous outputs (AC-007)
+
+## M4: Brand kits
+
+- [ ] `brand.yaml` schema + API + UI form
+- [ ] Logo upload, SVG sanitise and rasterise per format
+- [ ] `compositor.layout`: anchor/margin/size math, shared test vectors with the Studio
+- [ ] Placement editor: still frame + live CSS overlay + 9-point grid + sliders
+- [ ] `pnp.ctx.theme` injection; theme hash in the cache key
+- [ ] Test: logo change → zero Manim jobs (AC-102)
+
+## M5: Formats and variants
+
+- [ ] Format registry, Manim frame geometry per aspect
+- [ ] Matrix expansion with include/exclude + cap; `POST /exports/plan`
+- [ ] In-export dedupe (AC-104)
+- [ ] Variant gallery with thumbnails
+- [ ] Resource governor v1 (RAM-aware slots, preview priority)
+
+## M6: Colab, Docker, hardening
+
+- [ ] `colab/PiAndPixel.ipynb`: deps cell (with "skip LaTeX" toggle), Drive mount, start Agent, embed Studio
+- [ ] Drive sync of exports; disconnect recovery (FR-105)
+- [ ] `docker/Dockerfile` + optional sandbox render mode
+- [ ] Security tests from [`security.md`](security.md) §5
+- [ ] Playwright E2E following PRD §12.3, extended with brand and variants
+
+## M7: AI assist (P1)
+
+- [ ] `AIProvider` interface; Claude implementation (latest model, key in Agent config)
+- [ ] Generate scene from prompt → diff → apply → preview
+- [ ] "Fix this error" with traceback + file context, bounded to 3 attempts, user-approved
+
+---
+
+## CTO demo script (end of M5, ~10 minutes)
+
+1. **"No server needed."** Run `pnp studio` on a laptop and show that the browser is at `127.0.0.1` with the capability badge (CPU, RAM, Manim, LaTeX).
+2. **Create from starter.** Create *Pythagoras explainer* (3 scenes). Show that it is plain Manim code in Monaco.
+3. **Iterate.** Change a colour or text and draft-preview the scene in seconds. Introduce a typo and show the traceback linked to the line. Fix it.
+4. **Brand.** Upload the Acme logo, click `top-right`, then switch the preview to 9:16 and set the portrait override to `top-left`. All of this is live, with no render.
+5. **Variants.** Choose `main × {16:9, 9:16} × {Default, Acme}`. The plan preview shows *4 variants, 6 unique renders* (or similar). Click **Export**.
+6. **Watch.** Live progress per unit and composite; the gallery fills in.
+7. **The cheap part.** Move the Acme logo to `bottom-right` and re-export. **Zero** Manim renders run, only composites, and it finishes much faster.
+8. **Low-spec story.** Open the Colab notebook. The same Studio renders the same project on Colab, and the export lands in Drive.
+9. **ReelMVP path.** Run `pnp export --spec job.json` headless, then show the server-mode diagram in [`architecture.md`](architecture.md) §9: the same `pnp_core`, different host.
+
+## Risks specific to this plan
+
+| Risk | Mitigation |
+|---|---|
+| Colab terms restrict web UIs on the free tier | Use the Colab-native proxy, verify the terms in M0, fall back to "paid Colab / Kaggle / local only" |
+| LaTeX install is slow on Colab | "Skip LaTeX" toggle, cached TinyTeX tarball on Drive, and warnings in the capability badge |
+| 8 GB laptops OOM on 1080p 3D scenes | Benchmark-driven memory budget, a single slot on low RAM, draft-first workflow |
+| Scenes written for 16:9 look wrong on 9:16 | `pnp.ctx.format` helpers, starter scenes that demonstrate responsive layout, and a gallery that makes problems visible |
+| Variant explosion | Plan preview, confirmation, and `max` cap |

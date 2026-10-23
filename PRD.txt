@@ -1,0 +1,1307 @@
+# Product Requirements Document (PRD)
+## Code-First Educational Animation and Video Creation Platform
+
+**Document status:** Draft v1.0  
+**Product name:** TBD  
+**Document type:** Product and Technical Requirements  
+**Primary implementation tool:** Claude Code  
+**Animation engine:** Manim Community Edition  
+**Maximum video duration:** 30 minutes per exported video  
+**Initial output format:** MP4  
+**Initial target resolution:** 1920 × 1080 (1080p)
+
+---
+
+# 1. Executive Summary
+
+## 1.1 Product vision
+
+Build a developer-first platform that enables users to create high-quality, mathematically and technically accurate animated explainer videos using code.
+
+The platform will use the existing Manim animation ecosystem as its underlying rendering engine. It will not attempt to create a new animation library or replace Manim.
+
+Instead, the product will provide a complete environment for authoring, executing, previewing, debugging, modifying, and rendering Manim projects.
+
+Users must be able to work directly with Python source code and a terminal while benefiting from an integrated development environment, project management, rendering orchestration, and optional AI-assisted coding.
+
+The platform must support videos ranging from a few seconds to a maximum of 30 minutes per exported video.
+
+## 1.2 Core problem
+
+Creating professional mathematical and technical animations currently requires users to understand programming, animation APIs, rendering commands, dependencies, and debugging.
+
+Even experienced developers must manage repetitive workflows involving scene development, rendering, inspecting output, correcting errors, and rebuilding videos.
+
+The product should reduce this operational complexity without hiding the underlying code or restricting what users can create with Manim.
+
+## 1.3 Product principle
+
+**Build the best workflow around an existing animation engine, not another animation engine.**
+
+The platform must preserve Manim's capabilities and allow users to modify the source code directly.
+
+The user should own the code, control the animation, and be able to reproduce the exported video from the saved project.
+
+## 1.4 Primary objectives
+
+1. Allow users to create and manage Manim projects.
+2. Provide an integrated code editor and terminal-oriented workflow.
+3. Execute Manim code in a controlled environment.
+4. Preview rendered scenes and inspect execution errors.
+5. Support projects containing multiple scenes.
+6. Assemble scenes into a complete video of up to 30 minutes.
+7. Enable users to revise and rerender individual scenes.
+8. Provide optional AI-assisted code generation, editing, and debugging.
+9. Export reliable, playable MP4 videos.
+10. Maintain project source files and rendering metadata so work can be reproduced.
+
+---
+
+# 2. Product Scope and Non-Goals
+
+## 2.1 In scope for the MVP
+
+- Web-based application.
+- User accounts and project ownership.
+- Project creation, opening, renaming, and deletion.
+- Python source-code editing.
+- Integrated terminal or equivalent command interface.
+- Manim Community Edition integration.
+- Scene-based project organization.
+- Isolated server-side rendering.
+- Rendering job queue and progress reporting.
+- Scene previews and final video playback.
+- Error logs and basic debugging.
+- MP4 export.
+- Maximum 30-minute output duration.
+- Persistent source files and rendered artifacts.
+- Basic AI integration through a replaceable provider interface, if credentials and an AI provider are configured.
+- Automated tests for core workflows and security controls.
+
+## 2.2 Explicitly out of scope for the MVP
+
+The following features must not delay the initial working product:
+
+- A custom animation engine.
+- A replacement for the Manim Python API.
+- A drag-and-drop animation editor.
+- A full nonlinear video-editing timeline.
+- A marketplace for templates or community-created animations.
+- Collaborative real-time editing.
+- Public project publishing and social feeds.
+- Built-in stock-media libraries.
+- Automatic voiceover generation.
+- Advanced audio editing and lip synchronization.
+- Native mobile applications.
+- Multiple animation engines.
+- Guaranteed sub-minute rendering of complex videos.
+- Autonomous, unattended AI production of an entire long-form video without user review.
+
+These may be considered after the core rendering and editing workflow is stable.
+
+---
+
+# 3. Target Users
+
+## 3.1 Primary persona: Technical creator
+
+A developer, educator, researcher, or engineering professional who understands Python or is willing to learn it.
+
+**Needs:**
+- Full control over source code.
+- Access to Manim functionality.
+- Reliable rendering.
+- Fast iteration.
+- Useful errors and debugging tools.
+- Reusable projects and scenes.
+
+## 3.2 Secondary persona: AI-assisted creator
+
+A user who wants to describe an animation in natural language and receive editable Manim code.
+
+**Needs:**
+- Prompt-based code generation.
+- Clear source-code output.
+- Preview before final rendering.
+- The ability to request targeted modifications.
+- Recovery from common coding and rendering errors.
+
+AI-generated code must remain visible and editable. AI must not be required to use the core platform.
+
+## 3.3 Initial product positioning
+
+The platform is primarily a development environment for animation creation, not a conventional video editor.
+
+The initial experience should prioritize code, scenes, terminal output, and rendering over decorative editing controls.
+
+---
+
+# 4. Core User Journey
+
+The primary user journey is:
+
+1. Open the application.
+2. Create a project.
+3. Select a starter project or create a blank project.
+4. Edit the Python source code or request AI assistance.
+5. Execute a lightweight validation or preview render.
+6. Inspect the rendered output and execution logs.
+7. Modify the code and rerun the relevant scene.
+8. Repeat until the scenes are correct.
+9. Render the complete video.
+10. Inspect the final MP4.
+11. Download the video and retain the project source.
+
+The system must preserve the user's source files independently of rendering jobs.
+
+A failed render must not destroy or overwrite the last successful output.
+
+---
+
+# 5. Functional Requirements
+
+Priority definitions:
+
+- **P0:** Required for the MVP to be considered functional.
+- **P1:** Important, but may follow the first working end-to-end implementation.
+- **P2:** Post-MVP enhancement.
+
+## 5.1 Project management
+
+**FR-001 — Create project (P0)**
+
+Users must be able to create a new project with:
+- Project name.
+- Optional description.
+- Default Manim entry point.
+- A documented project directory structure.
+
+**FR-002 — Open and manage projects (P0)**
+
+Users must be able to:
+- View their projects.
+- Open an existing project.
+- Rename a project.
+- Delete a project after confirmation.
+
+Users must not be able to access another user's project without authorization.
+
+**FR-003 — Persist source files (P0)**
+
+Source files must be stored durably and associated with the correct project.
+
+Saving source code must not depend on a successful render.
+
+**FR-004 — Project reproducibility (P1)**
+
+Projects should record:
+- Manim version.
+- Python version.
+- Project dependencies.
+- Rendering settings.
+- Source revision or content hash.
+- Render configuration.
+
+The system should provide sufficient metadata to reproduce a previous render using the same compatible environment.
+
+## 5.2 Code editor
+
+**FR-005 — Python editing (P0)**
+
+Provide a source-code editor supporting:
+- Syntax highlighting.
+- Line numbers.
+- Basic indentation.
+- File navigation.
+- Save and unsaved-change indicators.
+- Search within the current file.
+- Readable error locations.
+
+A mature embeddable code editor should be preferred over implementing an editor from scratch.
+
+**FR-006 — Multiple source files (P0)**
+
+Users must be able to organize a project across multiple Python files and import supported modules within the project.
+
+**FR-007 — Code preservation (P0)**
+
+The system must preserve the latest saved source even when:
+- Python execution fails.
+- Manim raises an exception.
+- A rendering worker crashes.
+- A user refreshes the application.
+- A render job is cancelled.
+
+## 5.3 Terminal and execution
+
+**FR-008 — Terminal workflow (P0)**
+
+The platform must provide a terminal-oriented workflow for supported project operations.
+
+Users must be able to invoke documented Manim commands or equivalent structured execution actions.
+
+The terminal may be implemented as a browser terminal connected to a managed execution environment, or as a constrained command interface if a fully interactive shell is unnecessary for the first release.
+
+The chosen implementation must preserve access to essential Manim workflows.
+
+**FR-009 — Manim integration (P0)**
+
+The system must execute Manim Community Edition using a pinned, documented version.
+
+It must support:
+- Rendering a specified scene.
+- Rendering a selected scene at preview quality.
+- Rendering a selected scene at final quality.
+- Rendering a complete project.
+- Capturing stdout and stderr.
+- Returning the process exit status.
+
+The platform must not implement its own substitutes for standard Manim animation classes.
+
+**FR-010 — Execution status (P0)**
+
+Users must be able to distinguish:
+- Not started.
+- Queued.
+- Running.
+- Completed.
+- Failed.
+- Cancelled.
+- Timed out.
+
+## 5.4 Scene management
+
+**FR-011 — Multiple scenes (P0)**
+
+A project must support multiple Manim scenes within one or more Python files.
+
+Users must be able to select a scene and render it independently.
+
+**FR-012 — Scene discovery (P0)**
+
+The system should discover eligible scene classes using Manim's supported mechanisms or an equivalent safe discovery process.
+
+The application must display clear errors when a project contains no discoverable scenes or has invalid scene definitions.
+
+**FR-013 — Scene-level output (P0)**
+
+Each completed scene render must produce a separate artifact with metadata identifying:
+- Project.
+- Scene.
+- Source revision.
+- Rendering settings.
+- Duration.
+- Resolution.
+- Frame rate.
+- Completion status.
+
+**FR-014 — Scene reuse and ordering (P1)**
+
+Users should be able to select and order scenes for inclusion in the final video.
+
+For the MVP, ordering can be implemented through a simple ordered scene list rather than a sophisticated visual timeline.
+
+## 5.5 Preview and final rendering
+
+**FR-015 — Preview rendering (P0)**
+
+Users must be able to request a low-quality preview before committing to a full-quality render.
+
+Preview rendering must use lower rendering quality or resolution where appropriate, while preserving the core animation logic.
+
+**FR-016 — Final rendering (P0)**
+
+The platform must support final-quality rendering for projects within configured resource limits.
+
+The initial export target is:
+- Format: MP4.
+- Resolution: 1920 × 1080.
+- Frame rate: 30 FPS.
+- Maximum duration: 30 minutes.
+
+Users should receive a clear validation error if the requested settings cannot be supported.
+
+**FR-017 — Long-running jobs (P0)**
+
+Rendering must run asynchronously rather than blocking an application request.
+
+Users must be able to leave the page and return to inspect a job's status.
+
+The server must persist job state and recover safely from application restarts.
+
+**FR-018 — Rendering progress (P0)**
+
+The interface must display:
+- Current job status.
+- Current scene, where available.
+- Progress percentage, when reliably measurable.
+- Elapsed time.
+- Failure details, when applicable.
+
+The system must not display invented progress percentages when reliable progress information is unavailable.
+
+**FR-019 — Render cancellation (P1)**
+
+Users should be able to cancel a queued or running job.
+
+Cancellation must terminate the associated process and its child processes safely.
+
+A cancelled job must not be reported as completed.
+
+**FR-020 — Retry and recovery (P0)**
+
+Users must be able to retry a failed job.
+
+Retries must not corrupt existing artifacts or duplicate final outputs.
+
+The system must preserve logs from failed attempts for debugging.
+
+## 5.6 Video assembly
+
+**FR-021 — Combine scenes (P0)**
+
+The platform must assemble selected scene outputs into a single final video.
+
+It must validate compatibility between segments, including:
+- Video dimensions.
+- Frame rate.
+- Codec compatibility.
+- Pixel format.
+- Video duration.
+
+Use FFmpeg or an equivalent established media-processing tool for assembly.
+
+**FR-022 — Duration validation (P0)**
+
+The maximum final video duration is 1,800 seconds.
+
+The server must validate actual output duration before marking an export successful.
+
+A video exceeding the configured limit must not be accepted as a valid final export.
+
+**FR-023 — Assembly correctness (P0)**
+
+The system must preserve scene order and avoid unintended frame-rate changes, black frames, truncated segments, and missing scene outputs.
+
+Where exact stream-copy concatenation is not possible, the system must use a compatible encoding pipeline.
+
+**FR-024 — Final video inspection (P0)**
+
+After assembly, the system must verify that:
+- The output file exists.
+- The output is readable by the media probe.
+- The video stream is present.
+- The reported duration is within the permitted limit.
+- The resolution and frame rate match the requested export settings, subject to documented encoder behavior.
+
+## 5.7 Playback and downloads
+
+**FR-025 — Video playback (P0)**
+
+Users must be able to play a completed render within the application.
+
+**FR-026 — Download output (P0)**
+
+Users must be able to download the final MP4.
+
+**FR-027 — Artifact authorization (P0)**
+
+A user must not be able to download another user's artifacts by changing an identifier or guessing a storage path.
+
+Downloads must be authorized by the backend.
+
+## 5.8 AI-assisted development
+
+AI functionality is an enhancement to the code-first platform, not a dependency of its rendering engine.
+
+**FR-028 — AI code generation (P1)**
+
+When configured, users should be able to submit a natural-language request and receive editable Manim Python code.
+
+**FR-029 — AI code modification (P1)**
+
+Users should be able to request changes to existing source code.
+
+The system should preserve unrelated code and clearly show the changes before applying them.
+
+**FR-030 — AI-assisted debugging (P1)**
+
+The system should provide relevant source code, error logs, and supported Manim documentation context to the configured AI provider.
+
+The assistant may propose a fix and generate a revised version.
+
+AI must not automatically retry indefinitely.
+
+**FR-031 — Execution approval (P0)**
+
+AI-generated code must not bypass the execution security model.
+
+Execution must use the same isolated rendering environment, resource limits, authorization checks, and network restrictions as manually written code.
+
+**FR-032 — Provider abstraction (P1)**
+
+The application should use an AI provider interface so the underlying model can be changed without rewriting project management or rendering logic.
+
+API keys must be stored server-side and must never be embedded in client-side code.
+
+---
+
+# 6. User Interface Requirements
+
+## 6.1 Main application layout
+
+The initial workspace should use a desktop-first, three-panel layout.
+
+**Left panel — Project explorer**
+- Project files.
+- Python files.
+- Scene list.
+- Rendered artifacts.
+- Project settings.
+
+**Center panel — Code editor**
+- Python source.
+- Syntax highlighting.
+- File tabs.
+- Save controls.
+- Execution and preview actions.
+
+**Right panel — Preview and logs**
+- Rendered scene preview.
+- Playback controls.
+- Error output.
+- Rendering status.
+- AI assistance, when configured.
+
+A terminal panel should be accessible below the editor or as a resizable workspace panel.
+
+The user should be able to resize or collapse panels without losing unsaved source changes.
+
+## 6.2 Primary actions
+
+The following actions must be clearly distinguishable:
+- Save.
+- Run or preview scene.
+- Render selected scene.
+- Render complete video.
+- Stop execution.
+- Download completed output.
+
+The interface must distinguish a preview render from a final render.
+
+## 6.3 User feedback
+
+The application must show actionable feedback for:
+- Invalid Python.
+- Missing dependencies.
+- Missing scene definitions.
+- Rendering failures.
+- Queue delays.
+- Resource-limit violations.
+- Export failures.
+- Storage failures.
+
+Errors should identify the failed operation and provide relevant logs where safe.
+
+---
+
+# 7. Technical Architecture
+
+## 7.1 Architectural principle
+
+Use a modular application with a clear separation between the web interface, project management, job orchestration, isolated execution, and artifact storage.
+
+Do not introduce microservices unless they solve a demonstrated scaling or reliability requirement.
+
+## 7.2 Recommended stack
+
+| Layer | Recommendation |
+|---|---|
+| Frontend | React with TypeScript |
+| Code editor | Monaco Editor |
+| Backend API | Python with FastAPI |
+| Animation runtime | Manim Community Edition |
+| Media processing | FFmpeg and FFprobe |
+| Database | PostgreSQL |
+| Job queue | Redis with a durable task-processing system |
+| Execution | Isolated containers with strict limits |
+| Artifact storage | S3-compatible object storage or a suitable local development backend |
+| Authentication | Established authentication library or provider |
+| Deployment | Docker-based development and deployment |
+
+These are proposed implementation choices. Claude Code should verify compatibility, dependency versions, and security implications before finalizing them.
+
+## 7.3 Core backend modules
+
+The backend should separate these responsibilities:
+
+1. **Authentication and authorization**
+   - User identity.
+   - Project ownership.
+   - Access control.
+
+2. **Project service**
+   - Project metadata.
+   - File operations.
+   - Source persistence.
+   - Project revisions.
+
+3. **Execution service**
+   - Validated job creation.
+   - Execution environment provisioning.
+   - Command invocation.
+   - Process lifecycle management.
+
+4. **Rendering orchestrator**
+   - Job queue.
+   - Worker coordination.
+   - Status tracking.
+   - Retry and cancellation policies.
+
+5. **Scene service**
+   - Scene discovery.
+   - Scene metadata.
+   - Scene-to-artifact associations.
+
+6. **Media assembly service**
+   - Scene compatibility checks.
+   - Concatenation or re-encoding.
+   - Final validation.
+
+7. **Artifact service**
+   - Artifact metadata.
+   - Storage.
+   - Authorized playback and downloads.
+   - Retention and cleanup.
+
+8. **AI service**
+   - Provider integration.
+   - Prompt handling.
+   - Code generation and modification.
+   - Error-context preparation.
+
+9. **Observability**
+   - Structured logs.
+   - Job metrics.
+   - Failure reporting.
+   - Operational health checks.
+
+## 7.4 Data model
+
+The initial database should contain at least the following entities.
+
+### User
+- `id`
+- `email`
+- `created_at`
+
+### Project
+- `id`
+- `owner_id`
+- `name`
+- `description`
+- `created_at`
+- `updated_at`
+
+### ProjectRevision
+- `id`
+- `project_id`
+- `revision_number`
+- `source_manifest`
+- `source_hash`
+- `created_at`
+
+### Scene
+- `id`
+- `project_id`
+- `name`
+- `source_file`
+- `scene_class`
+- `sort_order`
+
+### RenderJob
+- `id`
+- `project_id`
+- `revision_id`
+- `scene_id`, nullable for complete-project jobs
+- `job_type`
+- `status`
+- `settings`
+- `created_at`
+- `started_at`
+- `completed_at`
+- `error_summary`
+
+### Artifact
+- `id`
+- `project_id`
+- `render_job_id`
+- `scene_id`, nullable for final video
+- `artifact_type`
+- `storage_key`
+- `duration_seconds`
+- `width`
+- `height`
+- `frame_rate`
+- `created_at`
+
+The implementation may adjust this model to support scene ordering, render attempts, and multiple outputs per job.
+
+Files and binary media must not be stored directly in PostgreSQL. The database should store metadata and authorized storage references.
+
+## 7.5 API design
+
+Use versioned REST endpoints.
+
+Representative endpoints:
+
+- `POST /api/v1/projects`
+- `GET /api/v1/projects`
+- `GET /api/v1/projects/{project_id}`
+- `PATCH /api/v1/projects/{project_id}`
+- `DELETE /api/v1/projects/{project_id}`
+- `GET /api/v1/projects/{project_id}/files`
+- `PUT /api/v1/projects/{project_id}/files/{file_path}`
+- `POST /api/v1/projects/{project_id}/scenes/discover`
+- `POST /api/v1/projects/{project_id}/renders`
+- `GET /api/v1/renders/{render_id}`
+- `POST /api/v1/renders/{render_id}/cancel`
+- `POST /api/v1/projects/{project_id}/exports`
+- `GET /api/v1/artifacts/{artifact_id}`
+- `GET /api/v1/artifacts/{artifact_id}/download`
+
+These endpoints are illustrative contracts. The final API specification should define request schemas, response schemas, error codes, authentication requirements, and idempotency behavior.
+
+Rendering requests must return a job identifier rather than waiting for the entire render to finish.
+
+---
+
+# 8. Rendering Pipeline
+
+## 8.1 End-to-end pipeline
+
+The rendering pipeline must follow these stages:
+
+1. Receive a validated render request.
+2. Verify project ownership and permissions.
+3. Capture an immutable source revision.
+4. Validate the requested rendering configuration.
+5. Create a durable rendering job.
+6. Allocate an isolated execution environment.
+7. Prepare the approved project files and dependencies.
+8. Execute Manim.
+9. Capture stdout, stderr, exit status, and relevant metadata.
+10. Validate the scene output.
+11. Store the rendered scene artifact.
+12. Assemble the selected scene artifacts when requested.
+13. Validate the final MP4.
+14. Publish the completed artifact.
+15. Release execution resources and temporary files.
+
+If a stage fails, the system must record the failure and clean up temporary resources without deleting previously successful artifacts.
+
+## 8.2 Scene-level rendering
+
+The preferred long-form rendering strategy is to render scenes independently.
+
+For example, a 12-minute lesson may contain 24 scenes averaging 30 seconds each.
+
+This is an example, not a requirement that scenes have a fixed duration.
+
+The system must support scenes of varying lengths, provided the final video satisfies the maximum duration and resource policies.
+
+Independent rendering enables:
+- Targeted rerenders.
+- Better failure isolation.
+- More efficient debugging.
+- Reuse of unchanged outputs when source revisions and settings match.
+- Easier progress reporting.
+
+## 8.3 Incremental rendering
+
+The platform should associate each render with its source revision and settings.
+
+A cached scene may be reused only when the relevant source, dependencies, engine version, and rendering configuration are unchanged.
+
+The system must not reuse stale outputs merely because a scene has the same name.
+
+Incremental rendering is a P1 optimization. Correctness and reproducibility take precedence over cache efficiency.
+
+## 8.4 Resource controls
+
+Long videos can consume substantial CPU, memory, disk space, and rendering time.
+
+The rendering system must support configurable limits for:
+- Concurrent jobs.
+- CPU usage.
+- Memory usage.
+- Temporary disk space.
+- Wall-clock execution time.
+- Output file size.
+- Individual job retries.
+
+The initial limits must be configurable rather than hardcoded throughout the application.
+
+A 30-minute duration limit does not imply that every valid project can be rendered within a fixed amount of time.
+
+---
+
+# 9. Security Requirements
+
+Security is a foundational requirement because the platform executes user-controlled Python code.
+
+## 9.1 Execution isolation
+
+**SEC-001 — Never execute arbitrary project code in the main API process.**
+
+Run user code in an isolated execution environment.
+
+Each job must have controlled filesystem access and resource limits. Prefer a disposable environment for each render job or a comparably strong isolation design.
+
+## 9.2 Network isolation
+
+**SEC-002 — Deny outbound network access by default.**
+
+Manim rendering should not require arbitrary internet access.
+
+Dependency installation must occur through a controlled build or provisioning process rather than allowing submitted code unrestricted access to package registries or remote endpoints.
+
+Any future network-enabled feature requires a separate threat assessment.
+
+## 9.3 Filesystem restrictions
+
+**SEC-003 — Restrict file access.**
+
+A rendering process must not be able to read application secrets, database credentials, host files, or another user's project files.
+
+Validate paths and prevent directory traversal.
+
+Treat filenames, project archives, uploaded assets, and generated files as untrusted input.
+
+## 9.4 Process management
+
+**SEC-004 — Control subprocesses.**
+
+The system must:
+- Limit execution time.
+- Terminate child processes during cancellation.
+- Prevent uncontrolled process spawning.
+- Clean up abandoned jobs.
+- Enforce memory and CPU limits.
+
+## 9.5 Credentials and authorization
+
+**SEC-005 — Protect credentials and project data.**
+
+- Keep secrets out of source code and browser bundles.
+- Enforce ownership checks on every project and artifact operation.
+- Never trust client-supplied storage paths.
+- Redact credentials from logs.
+- Apply rate limits to expensive rendering operations.
+- Validate user input on the server.
+
+## 9.6 AI safety
+
+**SEC-006 — Treat AI-generated code as untrusted code.**
+
+AI output must go through the same validation and sandboxed execution workflow as manually written code.
+
+The AI provider must not receive unrelated projects, secrets, or personal information.
+
+Provider configuration must clearly define what code and logs are transmitted.
+
+---
+
+# 10. Non-Functional Requirements
+
+## 10.1 Reliability
+
+- Failed rendering must not corrupt source files.
+- Job state must survive API process restarts.
+- Duplicate requests must not accidentally create multiple equivalent final exports when idempotency is expected.
+- Previously completed artifacts must remain accessible until their retention policy expires.
+- Partial outputs must never be marked as valid completed exports.
+
+## 10.2 Performance
+
+The system should:
+- Load the project workspace without waiting for a render.
+- Return render-job creation responses promptly.
+- Run long jobs asynchronously.
+- Provide progress updates without requiring page refreshes.
+- Allow scene preview and final rendering to use separate quality settings.
+
+Exact response-time and rendering-throughput targets should be established through benchmarking against representative projects before production launch.
+
+## 10.3 Scalability
+
+The rendering worker pool must be independently scalable from the web API.
+
+Increasing render capacity must not require scaling the entire application by the same amount.
+
+Concurrency must be controlled according to available CPU, memory, and storage resources.
+
+## 10.4 Maintainability
+
+- Use modular code with clear interfaces.
+- Pin core runtime dependencies.
+- Keep configuration outside application logic.
+- Provide database migrations.
+- Include automated tests.
+- Document local development and deployment.
+- Avoid unnecessary abstraction and premature microservice decomposition.
+
+## 10.5 Accessibility and usability
+
+- Support keyboard navigation for core actions.
+- Make rendering status and errors understandable.
+- Preserve editor state when panels are opened or closed.
+- Confirm destructive actions.
+- Clearly distinguish unsaved changes from persisted source.
+
+---
+
+# 11. Acceptance Criteria
+
+The MVP is accepted only when the following end-to-end scenarios pass.
+
+## AC-001 — Create and save a project
+
+**Given** an authenticated user,
+
+**When** the user creates a project and saves a Python file,
+
+**Then** the project and source file remain available after refreshing the application.
+
+## AC-002 — Render a basic Manim scene
+
+**Given** a valid Manim project,
+
+**When** the user requests a preview render,
+
+**Then** the system creates a job, executes Manim in isolation, and provides a playable scene artifact when rendering succeeds.
+
+## AC-003 — Handle invalid Python
+
+**Given** a project with a syntax error,
+
+**When** the user runs the scene,
+
+**Then** the job fails with useful error information and the submitted source remains unchanged.
+
+## AC-004 — Render multiple scenes
+
+**Given** a project containing multiple valid scenes,
+
+**When** the user renders the selected scenes,
+
+**Then** the system produces separate scene artifacts and preserves their identities and ordering metadata.
+
+## AC-005 — Assemble a final video
+
+**Given** multiple compatible rendered scenes,
+
+**When** the user requests a final export,
+
+**Then** the system assembles them in the selected order into a playable MP4.
+
+## AC-006 — Enforce the duration limit
+
+**Given** an export that exceeds 1,800 seconds,
+
+**When** final validation runs,
+
+**Then** the export is rejected and is not marked as completed.
+
+## AC-007 — Preserve previous outputs
+
+**Given** a project with a successful render,
+
+**When** a subsequent render fails,
+
+**Then** the previously successful artifact remains available.
+
+## AC-008 — Cancel a job
+
+**Given** a running render,
+
+**When** the user cancels it,
+
+**Then** the job transitions to a cancelled state, its execution processes are terminated, and no partial output is marked as a successful final video.
+
+## AC-009 — Enforce project isolation
+
+**Given** two different users,
+
+**When** one user attempts to access the other user's project, source files, logs, or artifacts,
+
+**Then** the request is denied without exposing the protected resource.
+
+## AC-010 — Enforce execution isolation
+
+**Given** a project that attempts to access unauthorized host files or make an outbound network connection,
+
+**When** the project executes,
+
+**Then** the isolation controls prevent the prohibited access and the event is recorded safely.
+
+## AC-011 — Recover from worker failure
+
+**Given** a rendering worker crashes,
+
+**When** the job recovery process runs,
+
+**Then** the system detects the incomplete job, cleans up temporary resources, and allows a safe retry without corrupting the project.
+
+## AC-012 — Reproduce a render
+
+**Given** a saved project revision and rendering configuration,
+
+**When** the same compatible runtime executes that revision,
+
+**Then** the system uses the recorded source and settings rather than silently rendering a newer, unsaved revision.
+
+---
+
+# 12. Testing Strategy
+
+## 12.1 Unit tests
+
+Cover:
+- Project validation.
+- Authorization policies.
+- Scene metadata handling.
+- Render-job state transitions.
+- Duration calculations.
+- Artifact metadata.
+- Rendering configuration validation.
+- API error handling.
+
+## 12.2 Integration tests
+
+Cover:
+- Backend and PostgreSQL integration.
+- Job queue behavior.
+- Worker execution.
+- Manim output discovery.
+- FFmpeg assembly.
+- Artifact storage.
+- Cancellation and retry behavior.
+
+## 12.3 End-to-end tests
+
+Automate the following flow:
+
+1. Create a user or test session.
+2. Create a project.
+3. Add a known working Manim scene.
+4. Save the source.
+5. Render a preview.
+6. Inspect the preview.
+7. Add a second scene.
+8. Render both scenes.
+9. Assemble a final video.
+10. Verify the resulting MP4.
+11. Download the artifact.
+12. Confirm that another user cannot access it.
+
+## 12.4 Security tests
+
+Test:
+- Unauthorized project access.
+- Path traversal.
+- Malicious filenames.
+- Process termination.
+- CPU and memory exhaustion controls.
+- Network access restrictions.
+- Secret exposure.
+- Unsafe archive extraction, if project uploads are supported.
+
+## 12.5 Representative rendering tests
+
+Maintain small, version-controlled test projects covering:
+- Text and equations.
+- Graphs and coordinate axes.
+- Geometric transformations.
+- Three-dimensional scenes.
+- Multiple scenes.
+- Scene transitions.
+- Missing dependencies.
+- Deliberately invalid code.
+
+These tests validate the integration with Manim, not a replacement implementation of its features.
+
+---
+
+# 13. Implementation Roadmap
+
+Claude Code should implement the product incrementally. Each phase must leave the repository in a working, testable state.
+
+## Phase 0 — Repository and architecture validation
+
+Deliverables:
+- Inspect the existing repository, if one exists.
+- Document the chosen stack and system boundaries.
+- Define the project structure.
+- Define environment configuration.
+- Establish linting, formatting, type checks, and tests.
+- Verify Manim and FFmpeg installation and compatibility.
+- Document the local development workflow.
+
+**Exit criterion:** A reproducible development environment and an approved technical implementation plan.
+
+## Phase 1 — Minimal vertical slice
+
+Deliverables:
+- Basic frontend workspace.
+- Backend health endpoint.
+- Project creation.
+- Persistent source storage.
+- A known working Manim example.
+- A manually triggered render.
+- A rendered video artifact.
+- A playable preview.
+
+**Exit criterion:** A user can create a project, execute Manim, and see the resulting video.
+
+This is the first milestone. Do not begin with a complex editor or autonomous AI agent.
+
+## Phase 2 — Core authoring workflow
+
+Deliverables:
+- Code editor.
+- Project file explorer.
+- Scene discovery.
+- Terminal or supported command interface.
+- Preview and final-render controls.
+- Execution logs.
+- Basic project revision tracking.
+
+**Exit criterion:** A user can edit source code, render scenes, inspect errors, and iterate.
+
+## Phase 3 — Asynchronous rendering and video assembly
+
+Deliverables:
+- Durable job queue.
+- Rendering workers.
+- Job status and progress reporting.
+- Cancellation and retry.
+- Per-scene artifacts.
+- Ordered scene assembly.
+- MP4 validation.
+- Thirty-minute duration enforcement.
+
+**Exit criterion:** A multi-scene project can produce a validated final video of up to 30 minutes within configured resource limits.
+
+## Phase 4 — Security and reliability hardening
+
+Deliverables:
+- Isolated execution environments.
+- CPU, memory, disk, and time limits.
+- Network restrictions.
+- Project and artifact authorization.
+- Failure recovery.
+- Cleanup policies.
+- Security and integration tests.
+
+**Exit criterion:** The application passes the defined security tests and handles failed rendering without corrupting saved work.
+
+## Phase 5 — AI-assisted authoring
+
+Deliverables:
+- Configurable AI provider.
+- Prompt-based code generation.
+- Targeted code modifications.
+- Diff review.
+- Error-context-based debugging.
+- User-controlled execution.
+
+**Exit criterion:** Users can request code, review the changes, apply them, and render the result through the standard execution pipeline.
+
+## Phase 6 — Production readiness
+
+Deliverables:
+- Deployment configuration.
+- Database migrations.
+- Logging and operational metrics.
+- Backup and recovery procedures.
+- Storage lifecycle management.
+- Load tests.
+- Usage limits and operational documentation.
+
+**Exit criterion:** The application can be deployed, monitored, and operated with documented resource and reliability limits.
+
+---
+
+# 14. MVP Definition of Done
+
+The MVP is complete when all of the following are true:
+
+- [ ] A user can create and reopen a project.
+- [ ] Source code is saved persistently.
+- [ ] Multiple Python files are supported.
+- [ ] Manim code executes in an isolated environment.
+- [ ] A user can preview a scene.
+- [ ] Rendering errors are visible and actionable.
+- [ ] Multiple scenes can be rendered independently.
+- [ ] Scenes can be assembled into one video.
+- [ ] Final MP4 output is validated.
+- [ ] Export duration cannot exceed 30 minutes.
+- [ ] Rendering jobs run asynchronously.
+- [ ] Failed jobs can be retried safely.
+- [ ] Previous successful artifacts are preserved.
+- [ ] Project and artifact access is authorized.
+- [ ] Execution resource limits are enforced.
+- [ ] Automated unit, integration, and end-to-end tests pass.
+- [ ] A new developer can follow the README to run the application locally.
+- [ ] AI features, if implemented, use the same secure execution pipeline as manually written code.
+
+The MVP does not require every post-MVP enhancement to be implemented.
+
+---
+
+# 15. Risks and Mitigations
+
+## Risk 1 — Rendering takes too long
+
+**Mitigation:** Use preview-quality rendering, independent scene rendering, asynchronous workers, configurable concurrency, and resource monitoring.
+
+Do not promise fixed rendering times without benchmarking representative scenes.
+
+## Risk 2 — A 30-minute project exceeds available resources
+
+**Mitigation:** Enforce configurable execution limits, render scenes independently, validate output duration, and communicate resource-limit failures clearly.
+
+## Risk 3 — Malicious Python code
+
+**Mitigation:** Execute code in isolated environments, deny network access by default, restrict filesystem access, and enforce process and resource limits.
+
+## Risk 4 — AI produces invalid Manim code
+
+**Mitigation:** Use iterative preview renders, capture error logs, support targeted fixes, and keep users in control of code changes.
+
+## Risk 5 — Scene assembly produces inconsistent output
+
+**Mitigation:** Normalize or validate segment properties, inspect media streams, and test transitions and concatenation behavior.
+
+## Risk 6 — Unnecessary engineering complexity
+
+**Mitigation:** Build a modular monolith with separate rendering workers. Add more infrastructure only when required by measured workload or reliability needs.
+
+## Risk 7 — Dependency changes break old projects
+
+**Mitigation:** Pin runtime versions, record dependencies, and preserve project revision metadata.
+
+---
+
+# 16. Product Metrics
+
+Measure whether the platform reliably helps users create videos.
+
+### Core metrics
+- Percentage of valid starter projects rendered successfully.
+- Time from project creation to first successful preview.
+- Percentage of final exports completed successfully.
+- Percentage of jobs recovered after transient failures.
+- Number of render retries per successful export.
+- Percentage of exports that pass final media validation.
+- Incidents involving unauthorized access or execution isolation.
+
+### Secondary metrics
+- Percentage of users who successfully render multiple scenes.
+- Frequency of preview renders before final export.
+- Percentage of users who return to modify an existing project.
+- AI-generated code acceptance and successful-render rates, once AI functionality is available.
+
+Do not optimize only for raw rendering speed. Reliability, reproducibility, and successful iteration are equally important.
+
+---
+
+# 17. Implementation Instructions for Claude Code
+
+This section is intended to be used directly as the implementation brief.
+
+## 17.1 Mandatory working principles
+
+1. Inspect the repository before changing anything.
+2. Read existing project instructions and preserve established conventions where reasonable.
+3. Do not replace an existing working implementation without understanding it.
+4. Create a written implementation plan before substantial code changes.
+5. Build the smallest complete vertical slice first.
+6. Use Manim Community Edition rather than creating a custom animation engine.
+7. Use established libraries for code editing, media processing, and authentication.
+8. Never execute user-controlled Python in the main backend process.
+9. Keep secrets out of source code and client-side bundles.
+10. Write automated tests alongside implementation.
+11. Run the relevant tests after each phase.
+12. Do not mark a feature complete merely because its interface exists.
+13. Do not claim a rendering or security test passed unless it was actually executed.
+14. Document any deviation from this PRD and explain its technical justification.
+15. Avoid implementing out-of-scope features before the core workflow is complete.
+
+## 17.2 Required repository documentation
+
+Maintain the following documentation where appropriate:
+
+- `README.md` — Setup, execution, and development instructions.
+- `AGENTS.md` — Repository-level coding instructions for Claude Code.
+- `docs/architecture.md` — Components, data flow, and trust boundaries.
+- `docs/api.md` — API contracts and error handling.
+- `docs/rendering-pipeline.md` — Rendering and assembly behavior.
+- `docs/security.md` — Isolation model and threat mitigations.
+- `docs/implementation-plan.md` — Phases, dependencies, and completion status.
+- `docs/decisions/` — Significant technical decisions.
+
+Use the existing repository structure if these files already have equivalent locations.
+
+## 17.3 Required development behavior
+
+For each implementation phase:
+
+1. Identify the exact scope.
+2. Inspect the relevant code.
+3. State the planned changes.
+4. Implement the smallest coherent unit.
+5. Run tests and static checks.
+6. Fix regressions.
+7. Update documentation.
+8. Report completed functionality, test results, and remaining limitations.
+
+Do not implement the entire product in one unreviewed code-generation pass.
+
+## 17.4 First task to execute
+
+Claude Code should begin by inspecting the repository and reporting:
+
+- Existing application structure.
+- Existing framework and dependency versions.
+- Available Manim and FFmpeg installations.
+- Current database and storage setup.
+- Existing authentication and security mechanisms.
+- Missing infrastructure.
+- Recommended implementation sequence.
+- Any conflicts between the repository and this PRD.
+
+If the repository is empty, propose a minimal project structure consistent with the recommended architecture.
+
+After inspection, implement **Phase 0 and the Phase 1 vertical slice**. Do not proceed to advanced AI capabilities until a basic Manim project can be rendered and previewed reliably.
+
+---
+
+# 18. Final Product Definition
+
+The product is a code-first environment for creating, executing, refining, and rendering professional educational animations using Manim.
+
+The platform should make the existing animation engine easier to use without hiding its programming model or limiting its capabilities.
+
+The initial release must prioritize a reliable authoring and rendering workflow, secure execution, scene-based composition, reproducibility, and validated MP4 exports of up to 30 minutes.
+
+The defining user experience is:
+
+**Write or generate code → Execute → Preview → Debug → Refine → Render scenes → Assemble → Validate → Export.**
+
+Every major feature should support this workflow.
+
+The first milestone is not a feature-rich video editor. It is a secure, reliable platform that can take a user's Manim source code and turn it into a correct, playable video—and let the user improve that video through repeated iterations.
+
+**End of PRD.**
