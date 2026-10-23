@@ -1,5 +1,7 @@
 # Implementation Plan
 
+> Stage mapping used in `AGENTS.md`: 🚲 Cycle = M0–M1 · 🚗 Car = M2–M3 · 🚚 Truck = M4–M5 · ✈️ Aeroplane = M6–M8. Task IDs (C-01, R-01, T-01, A-01) and day estimates live in `AGENTS.md` §4.
+
 The PRD phases are re-sequenced for bring-your-own compute, branding and variants. Each milestone ends in a working, tested state (PRD §17.3). The **CTO demo is reachable at the end of M5**.
 
 | # | Milestone | Outcome | Est.* | Status |

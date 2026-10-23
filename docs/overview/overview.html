@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pi &amp; Pixel: Product Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #161B26;
+    --ink-2: #4A5468;
+    --ink-3: #7A8496;
+    --line: #E3E7EE;
+    --soft: #F5F7FA;
+    --night: #0F1115;
+    --night-2: #1A1E29;
+    --blue: #3BA9C9;
+    --blue-l: #58C4DD;
+    --red: #FC6255;
+    --green: #83C167;
+    --gold: #F0AC5F;
+    --violet: #9A72AC;
+    --sans: "Inter", "Noto Sans", "DejaVu Sans", sans-serif;
+    --mono: "JetBrains Mono", "DejaVu Sans Mono", monospace;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: var(--sans); font-size: 10pt; line-height: 1.5; }
+  .page { width: 210mm; height: 297mm; padding: 16mm 16mm 14mm; position: relative; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .runhead { position: absolute; top: 7mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 7.5pt; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; }
+  .foot { position: absolute; bottom: 7mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 7.5pt; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 2mm; }
+  h1 { font-size: 22pt; line-height: 1.15; margin: 0 0 2mm; letter-spacing: -.01em; }
+  h2 { font-size: 12pt; margin: 4.5mm 0 2mm; }
+  h3 { font-size: 10.5pt; margin: 0 0 1.5mm; }
+  p { margin: 0 0 2.5mm; }
+  .kicker { font-size: 8pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 2mm; }
+  .lead { font-size: 11pt; color: var(--ink-2); margin-bottom: 5mm; }
+  .muted { color: var(--ink-3); }
+  .small { font-size: 8.5pt; }
+  code, .mono { font-family: var(--mono); font-size: 8.5pt; }
+  a { color: var(--blue); text-decoration: none; }
+  figure { margin: 3mm 0 4mm; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { font-size: 8pt; color: var(--ink-3); margin-top: 1.5mm; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 3.5mm; background: #fff; }
+  .card.soft { background: var(--soft); border-color: transparent; }
+  .card .ic { font-size: 14pt; line-height: 1; margin-bottom: 1mm; }
+  .card p { font-size: 8.8pt; color: var(--ink-2); margin: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.8pt; margin: 2mm 0 4mm; }
+  th { text-align: left; font-weight: 600; color: var(--ink-2); border-bottom: 1.5px solid var(--ink); padding: 1.6mm 2mm; font-size: 8pt; text-transform: uppercase; letter-spacing: .04em; }
+  td { border-bottom: 1px solid var(--line); padding: 1.6mm 2mm; vertical-align: top; }
+  td:first-child { font-weight: 600; }
+  ul { margin: 0 0 3mm; padding-left: 4.5mm; }
+  li { margin-bottom: 1mm; }
+  pre { background: var(--night); color: #D7DCE5; border-radius: 2.5mm; padding: 3.5mm 4mm; font-family: var(--mono); font-size: 8pt; line-height: 1.55; margin: 2mm 0 4mm; white-space: pre; }
+  pre .k { color: #C792EA; } pre .s { color: #C3E88D; } pre .n { color: #82AAFF; } pre .c { color: #6B7385; } pre .y { color: var(--gold); }
+  .pill { display: inline-block; font-size: 7.5pt; font-weight: 600; padding: .6mm 2.2mm; border-radius: 10mm; background: var(--soft); color: var(--ink-2); margin-right: 1mm; }
+  .pill.b { background: #E3F4F9; color: #1F7F99; } .pill.g { background: #EAF5E4; color: #3E7A2A; } .pill.o { background: #FDF0E1; color: #9A5B14; } .pill.r { background: #FEE8E6; color: #B23A2E; }
+  .flow { display: flex; gap: 1.5mm; align-items: stretch; margin: 2mm 0 2mm; }
+  .flow div { flex: 1; text-align: center; font-size: 7.8pt; font-weight: 600; padding: 2.2mm 1mm; background: var(--soft); border-radius: 2mm; position: relative; }
+  .flow div span { display: block; font-size: 11pt; margin-bottom: .5mm; }
+  .note { border-left: 3px solid var(--gold); background: #FFF8EE; padding: 2.5mm 4mm; border-radius: 0 2mm 2mm 0; font-size: 8.8pt; color: var(--ink-2); margin: 3mm 0; }
+
+  /* cover */
+  .cover { background: var(--night); color: #E9EDF3; padding: 0; }
+  .cover .inner { padding: 22mm 18mm 0; }
+  .cover .kicker { color: var(--blue-l); }
+  .cover h1 { font-size: 44pt; font-weight: 800; color: #fff; margin: 4mm 0 4mm; letter-spacing: -.02em; }
+  .cover h1 em { font-style: normal; color: var(--blue-l); }
+  .cover .lead { color: #AAB3C2; font-size: 13pt; max-width: 150mm; line-height: 1.45; }
+  .cover .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 0 18mm; }
+  .cover .stat { border-top: 2px solid #2C3242; padding-top: 3mm; }
+  .cover .stat b { display: block; font-size: 15pt; color: #fff; }
+  .cover .stat span { font-size: 8.5pt; color: #8C96A8; }
+  .cover .meta { position: absolute; bottom: 12mm; left: 18mm; right: 18mm; display: flex; justify-content: space-between; font-size: 8pt; color: #7D8799; }
+
+  /* roadmap */
+  .stage { border-radius: 3mm; padding: 3.5mm; border: 1px solid var(--line); display: flex; flex-direction: column; }
+  .stage .emoji { font-size: 20pt; line-height: 1; }
+  .stage h3 { margin: 2mm 0 .5mm; }
+  .stage .days { font-size: 8pt; font-weight: 700; color: var(--blue); margin-bottom: 2mm; }
+  .stage ul { font-size: 8pt; padding-left: 3.5mm; margin-bottom: 2mm; flex: 1; }
+  .stage .exit { font-size: 7.8pt; background: var(--soft); border-radius: 1.5mm; padding: 1.8mm 2mm; color: var(--ink-2); }
+  .bar { display: flex; height: 7mm; border-radius: 2mm; overflow: hidden; margin: 3mm 0 1mm; font-size: 7.5pt; font-weight: 700; color: #fff; }
+  .bar div { display: flex; align-items: center; justify-content: center; }
+
+  /* videos */
+  .vid { display: flex; gap: 3.5mm; align-items: center; border: 1px solid var(--line); border-radius: 3mm; padding: 2.5mm 3mm; margin-bottom: 2mm; }
+  .vid .play { flex: 0 0 22mm; height: 13mm; border-radius: 2mm; background: var(--night); display: flex; align-items: center; justify-content: center; }
+  .vid .play::after { content: ""; border-left: 4.5mm solid var(--blue-l); border-top: 2.8mm solid transparent; border-bottom: 2.8mm solid transparent; margin-left: 1mm; }
+  .vid h3 { font-size: 9.5pt; margin: 0; }
+  .vid p { font-size: 8pt; margin: .5mm 0 0; color: var(--ink-2); }
+  .vid a { font-size: 7.8pt; word-break: break-all; }
+  .vid.ours { border-style: dashed; background: var(--soft); }
+  .vid.ours .play { background: #fff; border: 1px dashed var(--ink-3); }
+  .vid.ours .play::after { border-left-color: var(--ink-3); }
+</style>
+</head>
+<body>
+
+<!-- ============ 1. COVER ============ -->
+<section class="page cover">
+  <div class="inner">
+    <div class="kicker">Product overview · v0.1 · October 2026</div>
+    <h1>Pi <em>&amp;</em> Pixel</h1>
+    <p class="lead">A code-first studio for 3Blue1Brown-style explainer videos. Powered by Manim. Controlled from the browser. Rendered on your own machine or on Google Colab.</p>
+  </div>
+
+  <figure style="margin: 4mm 0 8mm;">
+  <svg viewBox="0 0 800 430" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+        <path d="M30 0H0V30" fill="none" stroke="#1E2330" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="800" height="430" fill="url(#grid)"/>
+    <line x1="0" y1="280" x2="800" y2="280" stroke="#2A3142" stroke-width="1.5"/>
+    <line x1="330" y1="0" x2="330" y2="430" stroke="#2A3142" stroke-width="1.5"/>
+    <!-- square on a (vertical leg) -->
+    <rect x="240" y="190" width="90" height="90" fill="#83C167" fill-opacity=".22" stroke="#83C167" stroke-width="2.5"/>
+    <!-- square on b (horizontal leg) -->
+    <rect x="330" y="280" width="120" height="120" fill="#58C4DD" fill-opacity=".22" stroke="#58C4DD" stroke-width="2.5"/>
+    <!-- square on c (hypotenuse) -->
+    <polygon points="450,280 330,190 420,70 540,160" fill="#F0AC5F" fill-opacity=".22" stroke="#F0AC5F" stroke-width="2.5"/>
+    <!-- triangle -->
+    <polygon points="330,280 450,280 330,190" fill="#FC6255" fill-opacity=".18" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M330 266 H344 V280" fill="none" stroke="#fff" stroke-width="2"/>
+    <text x="285" y="242" fill="#83C167" font-size="26" font-weight="700" text-anchor="middle">a²</text>
+    <text x="390" y="348" fill="#58C4DD" font-size="26" font-weight="700" text-anchor="middle">b²</text>
+    <text x="435" y="184" fill="#F0AC5F" font-size="26" font-weight="700" text-anchor="middle">c²</text>
+    <!-- equation -->
+    <text x="560" y="240" font-size="34" font-weight="700" fill="#fff">
+      <tspan fill="#83C167">a²</tspan> + <tspan fill="#58C4DD">b²</tspan> = <tspan fill="#F0AC5F">c²</tspan>
+    </text>
+    <text x="560" y="268" font-size="13" fill="#7D8799">rendered · branded · exported</text>
+    <!-- brand logo slot -->
+    <rect x="690" y="22" width="88" height="34" rx="6" fill="none" stroke="#F0AC5F" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="734" y="44" font-size="12" fill="#F0AC5F" text-anchor="middle" font-weight="600">YOUR LOGO</text>
+    <!-- format chips -->
+    <g font-size="11" font-weight="600">
+      <rect x="560" y="300" width="52" height="22" rx="11" fill="#1F2533"/><text x="586" y="315" fill="#AAB3C2" text-anchor="middle">16:9</text>
+      <rect x="618" y="300" width="52" height="22" rx="11" fill="#1F2533"/><text x="644" y="315" fill="#AAB3C2" text-anchor="middle">9:16</text>
+      <rect x="676" y="300" width="52" height="22" rx="11" fill="#1F2533"/><text x="702" y="315" fill="#AAB3C2" text-anchor="middle">1:1</text>
+    </g>
+  </svg>
+  </figure>
+
+  <div class="stats">
+    <div class="stat"><b>1 project → many videos</b><span>Every format, brand and language from one source</span></div>
+    <div class="stat"><b>Zero render servers</b><span>Runs on a laptop, in Docker or on Google Colab</span></div>
+    <div class="stat"><b>Up to 30 min</b><span>Validated 1080p MP4 per exported video</span></div>
+  </div>
+
+  <div class="meta">
+    <span>Prepared by Harsh Jha · Content engine for ReelMVP</span>
+    <span>Status: design complete · build starts at stage 🚲 Cycle</span>
+  </div>
+</section>
+
+<!-- ============ 2. AT A GLANCE ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>At a glance</span></div>
+  <div class="kicker">01 · At a glance</div>
+  <h1>Explainer videos as code</h1>
+  <p class="lead">Pi &amp; Pixel wraps the Manim animation engine in a browser studio. You write (or later, generate) a scene, preview it, apply a brand, and export every format you need from one project.</p>
+
+  <div class="grid2">
+    <div class="card soft">
+      <h3>The problem</h3>
+      <ul class="small" style="margin:0">
+        <li>3Blue1Brown-style animation needs Python, Manim, FFmpeg and LaTeX set up correctly.</li>
+        <li>Rendering is heavy on RAM and CPU, so weak laptops struggle.</li>
+        <li>Every format (YouTube, Reels) and every client brand means manual re-work.</li>
+        <li>Hosting render servers before the product is validated is expensive.</li>
+      </ul>
+    </div>
+    <div class="card soft">
+      <h3>The solution</h3>
+      <ul class="small" style="margin:0">
+        <li>A studio in the browser: editor, live preview, logs, brand kits, export gallery.</li>
+        <li>Rendering runs on the user's compute: their PC, Docker or Google Colab.</li>
+        <li>One project produces many videos × formats × brands × languages.</li>
+        <li>The same render core later runs on our servers inside ReelMVP.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Five ideas that define the product</h2>
+  <div class="grid3">
+    <div class="card"><div class="ic">🖥️</div><h3>Bring your own compute</h3><p>The browser only controls. All heavy work happens where the Agent runs: laptop, Docker or Colab.</p></div>
+    <div class="card"><div class="ic">π</div><h3>Manim stays Manim</h3><p>Scenes are plain Manim Python. No hidden engine, no lock-in. They also run with the normal <code>manim</code> command.</p></div>
+    <div class="card"><div class="ic">🎨</div><h3>Brand kits</h3><p>Logo position, size, opacity and timing, plus colours and fonts. Moving a logo never re-renders the animation.</p></div>
+    <div class="card"><div class="ic">🧩</div><h3>Many videos, many variants</h3><p>Compositions × formats × brands × parameters. Shared scenes are rendered once and reused.</p></div>
+    <div class="card"><div class="ic">🚚</div><h3>ReelMVP-ready</h3><p>The pipeline is a headless library plus a CLI. ReelMVP's servers will run the same code.</p></div>
+    <div class="card"><div class="ic">🤖</div><h3>AI when useful</h3><p>Later: Claude generates and fixes scenes. Its code is always shown as a diff and never auto-runs.</p></div>
+  </div>
+
+  <h2>The workflow</h2>
+  <div class="flow">
+    <div><span>✍️</span>Write</div>
+    <div><span>👀</span>Preview</div>
+    <div><span>🐞</span>Debug</div>
+    <div><span>🎨</span>Brand</div>
+    <div><span>🎬</span>Compose</div>
+    <div><span>🧮</span>Variants</div>
+    <div><span>✅</span>Validate</div>
+    <div><span>📦</span>Export</div>
+  </div>
+
+  <h2>Who it is for</h2>
+  <table>
+    <tr><th style="width:32%">User</th><th>What they get</th></tr>
+    <tr><td>Technical creators and educators</td><td>Full control over Manim code, with fast previews and readable errors</td></tr>
+    <tr><td>ReelMVP content team</td><td>The same lesson as a 16:9 video, a 9:16 reel and a teaser, in any brand, from one project</td></tr>
+    <tr><td>Users with low-spec laptops</td><td>The same studio, rendering on free or paid Google Colab</td></tr>
+    <tr><td>AI-assisted creators (later)</td><td>Describe an animation in words, review the generated code, render it</td></tr>
+  </table>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>2</span></div>
+</section>
+
+<!-- ============ 3. THE STUDIO ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>The Studio</span></div>
+  <div class="kicker">02 · What you see</div>
+  <h1>The Studio</h1>
+  <p class="lead">A three-panel workspace built for iteration: code on the left, result on the right, and the machine doing the work always visible.</p>
+
+  <figure>
+  <svg viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <rect x="0" y="0" width="800" height="480" rx="10" fill="#1A1E29"/>
+    <!-- title bar -->
+    <rect x="0" y="0" width="800" height="36" rx="10" fill="#141720"/>
+    <rect x="0" y="26" width="800" height="10" fill="#141720"/>
+    <circle cx="18" cy="18" r="5" fill="#FC6255"/><circle cx="34" cy="18" r="5" fill="#F0AC5F"/><circle cx="50" cy="18" r="5" fill="#83C167"/>
+    <text x="72" y="22" font-size="12" fill="#E9EDF3" font-weight="600">Pi &amp; Pixel Studio</text>
+    <text x="184" y="22" font-size="12" fill="#7D8799">/ pythagoras</text>
+    <rect x="512" y="9" width="276" height="19" rx="9.5" fill="#1F2A24"/>
+    <circle cx="524" cy="18.5" r="4" fill="#83C167"/>
+    <text x="534" y="22.5" font-size="10" fill="#B7D9A8">Local agent · 8 CPU · 7.5 GB · Manim ✓ · LaTeX ✓</text>
+
+    <!-- left panel -->
+    <rect x="0" y="36" width="170" height="404" fill="#161922"/>
+    <g font-size="11" fill="#AAB3C2">
+      <text x="14" y="58" font-size="9" fill="#6B7385" font-weight="700" letter-spacing="1">PROJECT</text>
+      <text x="14" y="80">▾ scenes</text>
+      <text x="30" y="98">intro.py</text>
+      <rect x="22" y="104" width="140" height="18" rx="3" fill="#2A3142"/>
+      <text x="30" y="117" fill="#fff">proof.py</text>
+      <text x="30" y="136">outro.py</text>
+      <text x="14" y="160">▾ brands</text>
+      <text x="30" y="178">default</text>
+      <text x="30" y="196">acme  <tspan fill="#F0AC5F">●</tspan></text>
+      <text x="14" y="220">▾ compositions</text>
+      <text x="30" y="238">main  <tspan fill="#6B7385">3 clips</tspan></text>
+      <text x="30" y="256">teaser  <tspan fill="#6B7385">1 clip</tspan></text>
+      <text x="14" y="280">▸ exports</text>
+    </g>
+
+    <!-- editor -->
+    <rect x="170" y="36" width="350" height="26" fill="#141720"/>
+    <rect x="170" y="36" width="96" height="26" fill="#1A1E29"/>
+    <text x="182" y="53" font-size="11" fill="#E9EDF3">proof.py <tspan fill="#F0AC5F">●</tspan></text>
+    <text x="280" y="53" font-size="11" fill="#6B7385">intro.py</text>
+    <g font-family="JetBrains Mono, DejaVu Sans Mono, monospace" font-size="11">
+      <g fill="#4A5266" text-anchor="end">
+        <text x="196" y="86">1</text><text x="196" y="104">2</text><text x="196" y="122">3</text><text x="196" y="140">4</text><text x="196" y="158">5</text><text x="196" y="176">6</text><text x="196" y="194">7</text><text x="196" y="212">8</text><text x="196" y="230">9</text><text x="196" y="248">10</text><text x="196" y="266">11</text>
+      </g>
+      <text x="206" y="86"><tspan fill="#C792EA">from</tspan><tspan fill="#D7DCE5"> manim </tspan><tspan fill="#C792EA">import</tspan><tspan fill="#D7DCE5"> *</tspan></text>
+      <text x="206" y="104"><tspan fill="#C792EA">from</tspan><tspan fill="#D7DCE5"> pnp </tspan><tspan fill="#C792EA">import</tspan><tspan fill="#D7DCE5"> ctx</tspan></text>
+      <text x="206" y="140"><tspan fill="#C792EA">class</tspan><tspan fill="#82AAFF"> Proof</tspan><tspan fill="#D7DCE5">(Scene):</tspan></text>
+      <text x="232" y="158"><tspan fill="#C792EA">def</tspan><tspan fill="#82AAFF"> construct</tspan><tspan fill="#D7DCE5">(self):</tspan></text>
+      <text x="259" y="176" fill="#D7DCE5">t = Polygon(ORIGIN, 4*RIGHT,</text>
+      <text x="285" y="194" fill="#D7DCE5">3*UP, color=<tspan fill="#F0AC5F">ctx.theme.primary</tspan>)</text>
+      <text x="259" y="212" fill="#D7DCE5">self.play(Create(t))</text>
+      <text x="259" y="230" fill="#D7DCE5">eq = MathTex(<tspan fill="#C3E88D">"a^2+b^2=c^2"</tspan>)</text>
+      <text x="259" y="248" fill="#D7DCE5">self.play(Write(eq.to_edge(UP)))</text>
+      <text x="259" y="266" fill="#6B7385"># layout adapts to 9:16 via ctx.format</text>
+    </g>
+
+    <!-- right panel -->
+    <rect x="520" y="36" width="280" height="290" fill="#161922"/>
+    <rect x="534" y="50" width="252" height="142" rx="4" fill="#0F1115"/>
+    <polygon points="610,160 690,160 610,100" fill="#FC6255" fill-opacity=".2" stroke="#fff" stroke-width="2"/>
+    <text x="700" y="90" font-size="13" fill="#fff" font-weight="700">a²+b²=c²</text>
+    <rect x="740" y="58" width="38" height="14" rx="3" fill="#F0AC5F"/>
+    <text x="759" y="68.5" font-size="7.5" fill="#1A1E29" text-anchor="middle" font-weight="700">ACME</text>
+    <rect x="534" y="198" width="252" height="4" rx="2" fill="#2A3142"/>
+    <rect x="534" y="198" width="150" height="4" rx="2" fill="#58C4DD"/>
+    <g font-size="10" font-weight="600">
+      <rect x="534" y="214" width="52" height="22" rx="11" fill="#2A3142"/><text x="560" y="229" fill="#fff" text-anchor="middle">Draft</text>
+      <rect x="592" y="214" width="62" height="22" rx="11" fill="none" stroke="#2A3142"/><text x="623" y="229" fill="#AAB3C2" text-anchor="middle">Preview</text>
+      <rect x="660" y="214" width="46" height="22" rx="11" fill="none" stroke="#2A3142"/><text x="683" y="229" fill="#AAB3C2" text-anchor="middle">Final</text>
+      <rect x="714" y="214" width="72" height="22" rx="11" fill="#3BA9C9"/><text x="750" y="229" fill="#fff" text-anchor="middle">Render ▸</text>
+    </g>
+    <text x="534" y="258" font-size="10" fill="#83C167">✓ Proof · 854×480 · 15 fps · validated</text>
+    <text x="534" y="276" font-size="10" fill="#AAB3C2">Format  <tspan fill="#fff">9:16 ▾</tspan>    Brand  <tspan fill="#fff">acme ▾</tspan></text>
+    <text x="534" y="298" font-size="10" fill="#AAB3C2">Queue: 0 waiting · 1 slot (RAM-aware)</text>
+
+    <!-- terminal -->
+    <rect x="170" y="326" width="630" height="114" fill="#0F1115"/>
+    <text x="182" y="344" font-size="9" fill="#6B7385" font-weight="700" letter-spacing="1">LOGS · TERMINAL</text>
+    <g font-family="JetBrains Mono, DejaVu Sans Mono, monospace" font-size="10.5">
+      <text x="182" y="364" fill="#AAB3C2">$ pnp render . --scene Proof --format portrait --quality draft</text>
+      <text x="182" y="382" fill="#7D8799">Animation 1: Create(Polygon)  100%</text>
+      <text x="182" y="400" fill="#7D8799">Animation 2: Write(MathTex)   100%</text>
+      <text x="182" y="418" fill="#83C167">✓ clip validated → .pnp/cache/units/3f9a…mp4</text>
+    </g>
+
+    <!-- status bar -->
+    <rect x="0" y="440" width="800" height="40" rx="10" fill="#141720"/>
+    <rect x="0" y="440" width="800" height="10" fill="#141720"/>
+    <text x="14" y="464" font-size="10" fill="#7D8799">revision r12 · saved</text>
+    <text x="786" y="464" font-size="10" fill="#7D8799" text-anchor="end">Export: main × 2 formats × 2 brands → 4 videos</text>
+
+    <!-- callouts -->
+    <g font-size="11" font-weight="700" fill="#fff" text-anchor="middle">
+      <circle cx="150" cy="58" r="10" fill="#FC6255"/><text x="150" y="62">1</text>
+      <circle cx="500" cy="86" r="10" fill="#FC6255"/><text x="500" y="90">2</text>
+      <circle cx="776" cy="120" r="10" fill="#FC6255"/><text x="776" y="124">3</text>
+      <circle cx="776" cy="282" r="10" fill="#FC6255"/><text x="776" y="286">4</text>
+      <circle cx="776" cy="410" r="10" fill="#FC6255"/><text x="776" y="414">5</text>
+    </g>
+  </svg>
+  <figcaption>Illustrative mockup of the target Studio. Screens will change during the build.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:6%">#</th><th style="width:24%">Area</th><th>What it does</th></tr>
+    <tr><td>1</td><td>Project explorer</td><td>Scene files, brand kits, compositions (videos) and exports in one tree</td></tr>
+    <tr><td>2</td><td>Code editor</td><td>Monaco (the VS Code editor): syntax highlighting, tabs, search, errors linked to the line</td></tr>
+    <tr><td>3</td><td>Preview</td><td>Plays the latest render for the chosen format and brand; the logo overlay updates live</td></tr>
+    <tr><td>4</td><td>Render controls</td><td>Draft / Preview / Final quality, format and brand pickers, a RAM-aware queue</td></tr>
+    <tr><td>5</td><td>Logs and terminal</td><td>Live Manim output, validation results, and a terminal for power users (local mode)</td></tr>
+  </table>
+  <p class="small muted">The status badge at the top always shows which machine is doing the work and what it can do (CPU, RAM, Manim and LaTeX availability).</p>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>3</span></div>
+</section>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>How it works</span></div>
+  <div class="kicker">03 · Architecture</div>
+  <h1>The browser controls. Your machine renders.</h1>
+  <p class="lead">Two parts: the <b>Studio</b> (a web page) and the <b>Agent</b> (a Python program on the compute target). Video data never travels through our servers.</p>
+
+  <figure>
+  <svg viewBox="0 0 800 430" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4A5468"/></marker>
+    </defs>
+    <!-- browser -->
+    <rect x="10" y="120" width="180" height="160" rx="10" fill="#F5F7FA" stroke="#C9D0DB"/>
+    <text x="100" y="146" text-anchor="middle" font-size="10" font-weight="700" fill="#7A8496" letter-spacing="1">YOUR BROWSER</text>
+    <rect x="28" y="160" width="144" height="100" rx="8" fill="#fff" stroke="#3BA9C9" stroke-width="2"/>
+    <text x="100" y="186" text-anchor="middle" font-size="14" font-weight="700" fill="#161B26">Studio</text>
+    <text x="100" y="204" text-anchor="middle" font-size="10" fill="#4A5468">React web app</text>
+    <text x="100" y="226" text-anchor="middle" font-size="9.5" fill="#7A8496">edit · preview · brand</text>
+    <text x="100" y="241" text-anchor="middle" font-size="9.5" fill="#7A8496">variants · download</text>
+
+    <!-- link -->
+    <line x1="192" y1="200" x2="256" y2="200" stroke="#4A5468" stroke-width="2" marker-start="url(#ar)" marker-end="url(#ar)"/>
+    <text x="224" y="186" text-anchor="middle" font-size="9" fill="#4A5468" font-weight="600">HTTPS + WS</text>
+    <text x="224" y="220" text-anchor="middle" font-size="9" fill="#4A5468">token</text>
+
+    <!-- compute target -->
+    <rect x="260" y="20" width="390" height="330" rx="12" fill="#fff" stroke="#161B26" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="276" y="42" font-size="10" font-weight="700" fill="#7A8496" letter-spacing="1">COMPUTE TARGET · YOUR PC · DOCKER · GOOGLE COLAB</text>
+
+    <rect x="280" y="56" width="350" height="72" rx="8" fill="#E3F4F9" stroke="#3BA9C9" stroke-width="1.5"/>
+    <text x="296" y="80" font-size="14" font-weight="700" fill="#161B26">Pi &amp; Pixel Agent</text>
+    <text x="296" y="98" font-size="10" fill="#1F7F99">REST + WebSocket API · token auth · serves the Studio</text>
+    <text x="296" y="114" font-size="10" fill="#1F7F99">SQLite job queue · variant planner · RAM-aware scheduler</text>
+
+    <line x1="455" y1="128" x2="455" y2="146" stroke="#4A5468" stroke-width="1.5" marker-end="url(#ar)"/>
+    <rect x="280" y="148" width="350" height="50" rx="8" fill="#EAF5E4" stroke="#83C167" stroke-width="1.5"/>
+    <text x="296" y="170" font-size="13" font-weight="700" fill="#161B26">pnp_core</text>
+    <text x="296" y="187" font-size="10" fill="#3E7A2A">headless render pipeline · also used by CLI and future ReelMVP</text>
+
+    <line x1="455" y1="198" x2="455" y2="214" stroke="#4A5468" stroke-width="1.5" marker-end="url(#ar)"/>
+    <g font-size="11" font-weight="700" text-anchor="middle">
+      <rect x="280" y="216" width="110" height="52" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/>
+      <text x="335" y="238" fill="#161B26">manim</text><text x="335" y="255" font-size="9" font-weight="400" fill="#9A5B14">draws scenes</text>
+      <rect x="400" y="216" width="110" height="52" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/>
+      <text x="455" y="238" fill="#161B26">ffmpeg</text><text x="455" y="255" font-size="9" font-weight="400" fill="#9A5B14">logo · join · encode</text>
+      <rect x="520" y="216" width="110" height="52" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/>
+      <text x="575" y="238" fill="#161B26">ffprobe</text><text x="575" y="255" font-size="9" font-weight="400" fill="#9A5B14">checks the output</text>
+    </g>
+    <text x="455" y="284" text-anchor="middle" font-size="9" fill="#7A8496">separate processes with time and memory limits, never inside the Agent</text>
+
+    <rect x="280" y="294" width="350" height="40" rx="8" fill="#F5F7FA" stroke="#C9D0DB"/>
+    <text x="455" y="319" text-anchor="middle" font-size="11" fill="#161B26">🗂  Project folder · renders · state.db</text>
+
+    <!-- side services -->
+    <rect x="680" y="56" width="110" height="72" rx="8" fill="#fff" stroke="#9A72AC" stroke-dasharray="5 3"/>
+    <text x="735" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#161B26">Claude API</text>
+    <text x="735" y="98" text-anchor="middle" font-size="9" fill="#7A8496">optional, later</text>
+    <text x="735" y="112" text-anchor="middle" font-size="9" fill="#7A8496">AI scene help</text>
+    <line x1="630" y1="92" x2="678" y2="92" stroke="#9A72AC" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+
+    <rect x="680" y="290" width="110" height="48" rx="8" fill="#fff" stroke="#C9D0DB" stroke-dasharray="5 3"/>
+    <text x="735" y="311" text-anchor="middle" font-size="11" font-weight="700" fill="#161B26">Google Drive</text>
+    <text x="735" y="326" text-anchor="middle" font-size="9" fill="#7A8496">Colab persistence</text>
+    <line x1="630" y1="314" x2="678" y2="314" stroke="#7A8496" stroke-width="1.5" stroke-dasharray="4 3" marker-start="url(#ar)" marker-end="url(#ar)"/>
+
+    <!-- future -->
+    <rect x="10" y="372" width="780" height="48" rx="10" fill="#FEE8E6" stroke="#FC6255" stroke-dasharray="6 4"/>
+    <text x="400" y="394" text-anchor="middle" font-size="12" font-weight="700" fill="#B23A2E">Future · ReelMVP</text>
+    <text x="400" y="410" text-anchor="middle" font-size="10" fill="#B23A2E">our servers run the same pnp_core in sandboxed workers; only the hosting changes</text>
+  </svg>
+  </figure>
+
+  <h2>Where it can run</h2>
+  <table>
+    <tr><th style="width:18%">Target</th><th style="width:26%">Best for</th><th style="width:28%">How you open it</th><th>Where files live</th></tr>
+    <tr><td>💻 Local PC</td><td>Developers, decent laptops</td><td><code>pnp studio</code> → 127.0.0.1:7860</td><td>A local folder</td></tr>
+    <tr><td>🐳 Docker</td><td>No dependency setup at all</td><td><code>docker run …</code> → localhost</td><td>A mounted folder</td></tr>
+    <tr><td>☁️ Google Colab</td><td>Low-spec machines</td><td>Run the notebook; Studio opens via Colab's own proxy</td><td>Google Drive</td></tr>
+    <tr><td>🏢 Server <span class="pill r">later</span></td><td>ReelMVP production</td><td>ReelMVP web app</td><td>Postgres + S3</td></tr>
+  </table>
+  <div class="note"><b>Why this design:</b> zero render-server cost while we validate the product, it works for people without powerful hardware, and nothing needs rewriting when ReelMVP moves rendering onto our own servers.</div>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>4</span></div>
+</section>
+
+<!-- ============ 5. BRAND KITS ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Brand kits</span></div>
+  <div class="kicker">04 · Branding</div>
+  <h1>Brand kits: the logo exactly where you want it</h1>
+  <p class="lead">Each brand kit holds a logo with its placement rules, a colour theme and a font. Placement can differ per format, so a reel can keep the logo clear of the app's buttons.</p>
+
+  <figure>
+  <svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#FC6255" stroke-width="2" stroke-opacity=".5"/>
+      </pattern>
+      <g id="dots9">
+        <circle cx="0" cy="0" r="3" /><circle cx="50" cy="0" r="3" /><circle cx="100" cy="0" r="3" />
+        <circle cx="0" cy="50" r="3" /><circle cx="50" cy="50" r="3" /><circle cx="100" cy="50" r="3" />
+        <circle cx="0" cy="100" r="3" /><circle cx="50" cy="100" r="3" /><circle cx="100" cy="100" r="3" />
+      </g>
+    </defs>
+
+    <!-- 16:9 -->
+    <rect x="10" y="40" width="320" height="180" rx="6" fill="#0F1115"/>
+    <g fill="#3A4256">
+      <circle cx="26" cy="56" r="3.5"/><circle cx="170" cy="56" r="3.5"/><circle cx="314" cy="56" r="3.5"/>
+      <circle cx="26" cy="130" r="3.5"/><circle cx="170" cy="130" r="3.5"/><circle cx="314" cy="130" r="3.5"/>
+      <circle cx="26" cy="204" r="3.5"/><circle cx="170" cy="204" r="3.5"/><circle cx="314" cy="204" r="3.5"/>
+    </g>
+    <polygon points="140,180 220,180 140,120" fill="#FC6255" fill-opacity=".2" stroke="#fff" stroke-width="2"/>
+    <rect x="270" y="52" width="48" height="20" rx="4" fill="#F0AC5F"/>
+    <text x="294" y="66" font-size="9" font-weight="800" fill="#1A1E29" text-anchor="middle">LOGO</text>
+    <text x="10" y="28" font-size="12" font-weight="700" fill="#161B26">16:9 · YouTube</text>
+    <text x="10" y="240" font-size="10" fill="#4A5468">anchor <tspan font-weight="700">top-right</tspan> · width 12% · margin 4%</text>
+
+    <!-- 9:16 -->
+    <rect x="370" y="10" width="160" height="284" rx="8" fill="#0F1115"/>
+    <rect x="370" y="236" width="160" height="58" fill="url(#hatch)"/>
+    <rect x="502" y="120" width="28" height="116" fill="url(#hatch)"/>
+    <polygon points="415,190 485,190 415,138" fill="#FC6255" fill-opacity=".2" stroke="#fff" stroke-width="2"/>
+    <rect x="380" y="22" width="56" height="22" rx="4" fill="#F0AC5F"/>
+    <text x="408" y="37" font-size="9" font-weight="800" fill="#1A1E29" text-anchor="middle">LOGO</text>
+    <text x="450" y="268" font-size="8.5" fill="#FC6255" text-anchor="middle" font-weight="700">platform UI · safe zone</text>
+    <text x="548" y="28" font-size="12" font-weight="700" fill="#161B26">9:16 · Reels / Shorts</text>
+    <text x="548" y="46" font-size="10" fill="#4A5468">override: <tspan font-weight="700">top-left</tspan> · 20%</text>
+    <text x="548" y="62" font-size="10" fill="#4A5468">avoids caption &amp; button areas</text>
+
+    <!-- 1:1 -->
+    <rect x="610" y="100" width="180" height="180" rx="6" fill="#0F1115"/>
+    <polygon points="660,220 730,220 660,168" fill="#FC6255" fill-opacity=".2" stroke="#fff" stroke-width="2"/>
+    <rect x="738" y="250" width="44" height="18" rx="4" fill="#F0AC5F"/>
+    <text x="760" y="263" font-size="8.5" font-weight="800" fill="#1A1E29" text-anchor="middle">LOGO</text>
+    <text x="610" y="300" font-size="12" font-weight="700" fill="#161B26">1:1 · Feed</text>
+    <text x="610" y="318" font-size="10" fill="#4A5468">anchor <tspan font-weight="700">bottom-right</tspan> · 15%</text>
+
+    <text x="10" y="300" font-size="10" fill="#7A8496">● 9-point anchor grid</text>
+    <text x="10" y="318" font-size="10" fill="#7A8496">or a custom x / y position</text>
+  </svg>
+  <figcaption>The same logo placed by per-format rules. The hatched area marks the platform UI zone on a 9:16 reel.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div>
+      <h2 style="margin-top:0">What you control</h2>
+      <table>
+        <tr><th>Setting</th><th>Options</th></tr>
+        <tr><td>Logo file</td><td>PNG with transparency, or SVG (≤ 5 MB)</td></tr>
+        <tr><td>Anchor</td><td>9-point grid or custom x / y</td></tr>
+        <tr><td>Size, margin</td><td>% of frame width / shorter edge</td></tr>
+        <tr><td>Opacity</td><td>0–100%</td></tr>
+        <tr><td>Timing</td><td>From / until, optional fade</td></tr>
+        <tr><td>Per format</td><td>Different rules for 16:9, 9:16, 1:1</td></tr>
+        <tr><td>Theme</td><td>Background, primary, secondary, accent, text colours; font</td></tr>
+        <tr><td>Later</td><td>Watermark, intro/outro, safe-zone auto-nudge</td></tr>
+      </table>
+    </div>
+    <div>
+      <h2 style="margin-top:0">What a change costs</h2>
+      <table>
+        <tr><th>You change</th><th>Manim re-render?</th></tr>
+        <tr><td>Logo position / size / opacity</td><td><span class="pill g">No</span> FFmpeg only</td></tr>
+        <tr><td>Clip order, music</td><td><span class="pill g">No</span> FFmpeg only</td></tr>
+        <tr><td>Brand colours / font</td><td><span class="pill o">Yes</span> affected scenes</td></tr>
+        <tr><td>Scene code, params, format</td><td><span class="pill o">Yes</span> affected scenes</td></tr>
+      </table>
+      <div class="note" style="margin-top:2mm">The logo is added at the very end, in the same FFmpeg pass that joins the scenes. Re-positioning it takes one quick encode instead of re-drawing every animation.</div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>5</span></div>
+</section>
+
+<!-- ============ 6. VARIANTS ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Videos and variants</span></div>
+  <div class="kicker">05 · Multiple videos and variations</div>
+  <h1>One project. Every video you need.</h1>
+  <p class="lead">A project holds several <b>compositions</b> (videos), each an ordered list of scenes. An export multiplies them across formats, brands and parameters such as language. Shared work is done once.</p>
+
+  <figure>
+  <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7A8496"/></marker>
+    </defs>
+    <text x="10" y="20" font-size="10" font-weight="700" fill="#7A8496" letter-spacing="1">1 · COMPOSITION</text>
+    <text x="230" y="20" font-size="10" font-weight="700" fill="#7A8496" letter-spacing="1">2 · MANIM RENDERS (UNIQUE)</text>
+    <text x="520" y="20" font-size="10" font-weight="700" fill="#7A8496" letter-spacing="1">3 · FINAL VIDEOS (FFMPEG)</text>
+
+    <rect x="10" y="36" width="170" height="290" rx="10" fill="#F5F7FA"/>
+    <text x="26" y="62" font-size="13" font-weight="700" fill="#161B26">main</text>
+    <g font-size="11" font-weight="600">
+      <rect x="26" y="78" width="138" height="34" rx="6" fill="#fff" stroke="#83C167"/><text x="40" y="100" fill="#161B26">① Intro</text>
+      <rect x="26" y="120" width="138" height="34" rx="6" fill="#fff" stroke="#58C4DD"/><text x="40" y="142" fill="#161B26">② Proof</text>
+      <rect x="26" y="162" width="138" height="34" rx="6" fill="#fff" stroke="#F0AC5F"/><text x="40" y="184" fill="#161B26">③ Outro</text>
+    </g>
+    <text x="26" y="230" font-size="10" fill="#4A5468">× formats  16:9, 9:16</text>
+    <text x="26" y="248" font-size="10" fill="#4A5468">× brands   Default, Acme</text>
+    <text x="26" y="276" font-size="10" fill="#7A8496">both brands share one</text>
+    <text x="26" y="292" font-size="10" fill="#7A8496">colour theme</text>
+
+    <line x1="184" y1="180" x2="222" y2="180" stroke="#7A8496" stroke-width="2" marker-end="url(#ar2)"/>
+
+    <!-- units -->
+    <g font-size="10" font-weight="600" text-anchor="middle">
+      <text x="300" y="50" font-size="10" fill="#4A5468" font-weight="700">16:9</text>
+      <rect x="236" y="60" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="82" fill="#83C167">Intro @16:9</text>
+      <rect x="236" y="102" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="124" fill="#58C4DD">Proof @16:9</text>
+      <rect x="236" y="144" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="166" fill="#F0AC5F">Outro @16:9</text>
+      <text x="300" y="208" font-size="10" fill="#4A5468" font-weight="700">9:16</text>
+      <rect x="236" y="218" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="240" fill="#83C167">Intro @9:16</text>
+      <rect x="236" y="260" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="282" fill="#58C4DD">Proof @9:16</text>
+      <rect x="236" y="302" width="128" height="36" rx="6" fill="#0F1115"/><text x="300" y="324" fill="#F0AC5F">Outro @9:16</text>
+    </g>
+
+    <g stroke="#7A8496" stroke-width="1.5" fill="none" marker-end="url(#ar2)">
+      <path d="M368 120 C430 120 440 80 508 80"/>
+      <path d="M368 120 C430 120 440 150 508 150"/>
+      <path d="M368 278 C430 278 440 222 508 222"/>
+      <path d="M368 278 C430 278 440 300 508 300"/>
+    </g>
+
+    <!-- finals -->
+    <rect x="512" y="50" width="120" height="68" rx="5" fill="#0F1115"/>
+    <polygon points="552,104 592,104 552,74" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="600" y="56" width="26" height="11" rx="2" fill="#AAB3C2"/>
+    <text x="645" y="80" font-size="11" font-weight="700" fill="#161B26">16:9 · Default</text>
+    <text x="645" y="96" font-size="9.5" fill="#7A8496">main-landscape-default.mp4</text>
+
+    <rect x="512" y="124" width="120" height="68" rx="5" fill="#0F1115"/>
+    <polygon points="552,178 592,178 552,148" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="518" y="130" width="26" height="11" rx="2" fill="#F0AC5F"/>
+    <text x="645" y="154" font-size="11" font-weight="700" fill="#161B26">16:9 · Acme</text>
+    <text x="645" y="170" font-size="9.5" fill="#7A8496">main-landscape-acme.mp4</text>
+
+    <rect x="530" y="200" width="44" height="78" rx="5" fill="#0F1115"/>
+    <polygon points="540,262 562,262 540,244" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="555" y="205" width="15" height="7" rx="2" fill="#AAB3C2"/>
+    <text x="645" y="232" font-size="11" font-weight="700" fill="#161B26">9:16 · Default</text>
+    <text x="645" y="248" font-size="9.5" fill="#7A8496">main-portrait-default.mp4</text>
+
+    <rect x="580" y="284" width="44" height="72" rx="5" fill="#0F1115"/>
+    <polygon points="590,344 612,344 590,326" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="584" y="289" width="15" height="7" rx="2" fill="#F0AC5F"/>
+    <text x="645" y="312" font-size="11" font-weight="700" fill="#161B26">9:16 · Acme</text>
+    <text x="645" y="328" font-size="9.5" fill="#7A8496">main-portrait-acme.mp4</text>
+  </svg>
+  <figcaption>For readability the arrows show one representative scene per format. Every final video uses all three clips of its format.</figcaption>
+  </figure>
+
+  <div class="grid3">
+    <div class="card soft"><h3>4 videos</h3><p>2 formats × 2 brands of the <i>main</i> composition.</p></div>
+    <div class="card soft"><h3>6 Manim renders, not 12</h3><p>The brands share a theme, so each scene is drawn once per format and reused.</p></div>
+    <div class="card soft"><h3>0 renders to move a logo</h3><p>Only the 4 quick FFmpeg composites re-run.</p></div>
+  </div>
+
+  <h2>How an export is described</h2>
+<pre><span class="c"># pnp.yaml (excerpt)</span>
+<span class="n">compositions</span>:
+  <span class="n">main</span>:   { <span class="n">clips</span>: [ intro.py:Intro, proof.py:Proof, outro.py:Outro ] }
+  <span class="n">teaser</span>: { <span class="n">clips</span>: [ proof.py:Proof ], <span class="n">params</span>: { <span class="n">title</span>: <span class="s">"Why a² + b² = c²"</span> } }
+
+<span class="n">variants</span>:
+  <span class="n">matrix</span>:
+    <span class="n">composition</span>: [main, teaser]
+    <span class="n">format</span>:      [landscape, portrait]     <span class="c"># 16:9, 9:16 (1:1 also built in)</span>
+    <span class="n">brand</span>:       [default, acme]
+    <span class="n">params</span>: { <span class="n">lang</span>: [en, hi] }              <span class="c"># every parameter multiplies the set</span>
+  <span class="n">exclude</span>: [ { composition: teaser, format: landscape } ]
+  <span class="n">max</span>: <span class="y">24</span>                                   <span class="c"># safety cap</span></pre>
+  <p class="small muted">Before anything runs, the Studio shows the number of videos, the number of unique renders, and how many are already cached. You confirm, then it renders.</p>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>6</span></div>
+</section>
+
+<!-- ============ 7. UNDER THE HOOD ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Under the hood</span></div>
+  <div class="kicker">06 · Rendering pipeline</div>
+  <h1>From code to a checked MP4</h1>
+  <p class="lead">Every export follows the same nine steps. A failure at any step is logged and cleaned up, and the last good video is never overwritten.</p>
+
+  <figure>
+  <svg viewBox="0 0 800 230" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7A8496"/></marker>
+    </defs>
+    <g font-size="11" font-weight="700" text-anchor="middle">
+      <rect x="10" y="20" width="140" height="62" rx="8" fill="#F5F7FA"/><text x="80" y="46" fill="#161B26">1 · Request</text><text x="80" y="64" font-size="9" font-weight="400" fill="#4A5468">Studio or CLI job spec</text>
+      <rect x="168" y="20" width="140" height="62" rx="8" fill="#F5F7FA"/><text x="238" y="46" fill="#161B26">2 · Snapshot</text><text x="238" y="64" font-size="9" font-weight="400" fill="#4A5468">freeze exact source</text>
+      <rect x="326" y="20" width="140" height="62" rx="8" fill="#F5F7FA"/><text x="396" y="46" fill="#161B26">3 · Plan + dedupe</text><text x="396" y="64" font-size="9" font-weight="400" fill="#4A5468">expand variants</text>
+      <rect x="484" y="20" width="140" height="62" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/><text x="554" y="46" fill="#161B26">4 · Render scenes</text><text x="554" y="64" font-size="9" font-weight="400" fill="#9A5B14">manim, in parallel</text>
+      <rect x="642" y="20" width="148" height="62" rx="8" fill="#F5F7FA"/><text x="716" y="46" fill="#161B26">5 · Check clips</text><text x="716" y="64" font-size="9" font-weight="400" fill="#4A5468">size · fps · duration</text>
+
+      <rect x="80" y="130" width="170" height="62" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/><text x="165" y="156" fill="#161B26">6 · Composite</text><text x="165" y="174" font-size="9" font-weight="400" fill="#9A5B14">join + logo + music, 1 encode</text>
+      <rect x="268" y="130" width="170" height="62" rx="8" fill="#EAF5E4" stroke="#83C167"/><text x="353" y="156" fill="#161B26">7 · Validate</text><text x="353" y="174" font-size="9" font-weight="400" fill="#3E7A2A">WxH · fps · ≤ 30 min</text>
+      <rect x="456" y="130" width="140" height="62" rx="8" fill="#F5F7FA"/><text x="526" y="156" fill="#161B26">8 · Publish</text><text x="526" y="174" font-size="9" font-weight="400" fill="#4A5468">atomic, never partial</text>
+      <rect x="614" y="130" width="140" height="62" rx="8" fill="#F5F7FA"/><text x="684" y="156" fill="#161B26">9 · Clean up</text><text x="684" y="174" font-size="9" font-weight="400" fill="#4A5468">temp files, memory</text>
+    </g>
+    <g stroke="#7A8496" stroke-width="1.8" fill="none" marker-end="url(#ar3)">
+      <line x1="150" y1="51" x2="166" y2="51"/><line x1="308" y1="51" x2="324" y2="51"/><line x1="466" y1="51" x2="482" y2="51"/><line x1="624" y1="51" x2="640" y2="51"/>
+      <path d="M716 82 V106 H165 V128"/>
+      <line x1="250" y1="161" x2="266" y2="161"/><line x1="438" y1="161" x2="454" y2="161"/><line x1="596" y1="161" x2="612" y2="161"/>
+    </g>
+    <text x="400" y="220" text-anchor="middle" font-size="10" fill="#B23A2E">Any failure → logged with full output · temp files removed · previous good video kept · one-click retry</text>
+  </svg>
+  </figure>
+
+  <div class="grid2">
+    <div>
+      <h2 style="margin-top:0">A scene is plain Manim</h2>
+<pre style="font-size:7.6pt"><span class="k">from</span> manim <span class="k">import</span> *
+<span class="k">from</span> pnp <span class="k">import</span> ctx   <span class="c"># format, theme, params</span>
+
+<span class="k">class</span> <span class="n">Proof</span>(Scene):
+    <span class="k">def</span> <span class="n">construct</span>(self):
+        self.camera.background_color = ctx.theme.background
+        title = Text(ctx.params.get(<span class="s">"title"</span>, <span class="s">"a² + b² = c²"</span>),
+                     color=ctx.theme.primary)
+        <span class="c"># one scene, responsive to 16:9 and 9:16</span>
+        title.to_edge(UP <span class="k">if</span> ctx.format.is_portrait <span class="k">else</span> UL)
+        self.play(Write(title))</pre>
+      <p class="small muted">Without Pi &amp; Pixel, <code>ctx</code> falls back to defaults, so <code>manim -ql proof.py Proof</code> still works.</p>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Safety and reliability</h2>
+      <ul class="small">
+        <li><b>User code never runs inside the Agent.</b> Each render is a separate process with time, memory and process limits; cancel kills the whole tree.</li>
+        <li><b>Locked down by default.</b> The Agent listens only on 127.0.0.1 and every request needs a random token.</li>
+        <li><b>Secrets stay out.</b> Tokens and AI keys never reach the browser or the render process.</li>
+        <li><b>No fake progress bars.</b> Only measured counts and percentages are shown.</li>
+        <li><b>Reproducible.</b> Each video records its source revision and engine versions.</li>
+        <li><b>Crash-safe.</b> Jobs survive restarts; interrupted jobs (e.g. a Colab disconnect) can be retried.</li>
+        <li><b>Low-RAM aware.</b> The scheduler runs fewer jobs at once when memory is short.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>7</span></div>
+</section>
+
+<!-- ============ 8. ROADMAP ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Roadmap</span></div>
+  <div class="kicker">07 · Plan and estimates</div>
+  <h1>Cycle → car → truck → aeroplane</h1>
+  <p class="lead">We build in stages. Each stage is usable on its own, and the next one starts only after the current stage's exit test passes.</p>
+
+  <div class="grid4">
+    <div class="stage">
+      <div class="emoji">🚲</div><h3>Cycle</h3><div class="days">≈ 6 working days</div>
+      <ul>
+        <li>Project skeleton and tooling</li>
+        <li>Manim + FFmpeg verified (local + Colab)</li>
+        <li>Render one scene from the CLI</li>
+        <li>Agent with token auth</li>
+        <li>Studio: Render button + player</li>
+        <li>Memory and speed benchmark</li>
+      </ul>
+      <div class="exit"><b>Exit:</b> click Render, the video plays in the browser.</div>
+    </div>
+    <div class="stage">
+      <div class="emoji">🚗</div><h3>Car</h3><div class="days">≈ 11 working days</div>
+      <ul>
+        <li>Code editor, file tree, save</li>
+        <li>Scene discovery, live logs</li>
+        <li>Draft / preview / final</li>
+        <li>Revisions and job queue</li>
+        <li>Cancel, retry, crash recovery</li>
+        <li>Join scenes, 30-min check</li>
+      </ul>
+      <div class="exit"><b>Exit:</b> edit, preview, fix, then export one checked MP4.</div>
+    </div>
+    <div class="stage" style="border-color:#3BA9C9; box-shadow: 0 0 0 1px #3BA9C9 inset;">
+      <div class="emoji">🚚</div><h3>Truck</h3><div class="days">≈ 10 working days</div>
+      <ul>
+        <li>Brand kits + logo upload</li>
+        <li>Logo overlay + placement editor</li>
+        <li>Theme passed into scenes</li>
+        <li>16:9 / 9:16 / 1:1 formats</li>
+        <li>Variant matrix + dedupe</li>
+        <li>Variant gallery</li>
+      </ul>
+      <div class="exit"><b>Exit:</b> the CTO demo runs end to end.</div>
+    </div>
+    <div class="stage">
+      <div class="emoji">✈️</div><h3>Aeroplane</h3><div class="days">estimated after demo</div>
+      <ul>
+        <li>Polished Colab notebook</li>
+        <li>Docker image + sandbox</li>
+        <li>Security + end-to-end tests</li>
+        <li>AI assist with Claude</li>
+        <li>Music, intro/outro, watermark</li>
+        <li>Server mode for ReelMVP</li>
+      </ul>
+      <div class="exit"><b>Exit:</b> ready to plug into ReelMVP.</div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div style="flex:6; background:#83C167">🚲 6 d</div>
+    <div style="flex:11; background:#58C4DD">🚗 11 d</div>
+    <div style="flex:10; background:#3BA9C9">🚚 10 d</div>
+    <div style="flex:6; background:#C9D0DB; color:#4A5468">buffer ~20%</div>
+  </div>
+  <p class="small"><b>≈ 27 working days to the CTO demo; plan for 6–7 weeks</b> with buffer. These are estimates for one developer working with Claude Code, and will be re-checked after the Cycle stage's benchmark.</p>
+
+  <h2>CTO demo script (≈ 10 minutes, end of Truck)</h2>
+  <table>
+    <tr><th style="width:5%">#</th><th style="width:24%">Step</th><th>What it proves</th></tr>
+    <tr><td>1</td><td><code>pnp studio</code> on a laptop</td><td>No server needed; the badge shows CPU, RAM, Manim and LaTeX</td></tr>
+    <tr><td>2</td><td>Create "Pythagoras" starter</td><td>It is plain, editable Manim code</td></tr>
+    <tr><td>3</td><td>Edit, draft-preview, break, fix</td><td>Fast loop; errors link to the exact line</td></tr>
+    <tr><td>4</td><td>Upload logo, place it</td><td>Live placement per format, with no render</td></tr>
+    <tr><td>5</td><td>Export 2 formats × 2 brands</td><td>Plan preview shows 4 videos and the unique render count</td></tr>
+    <tr><td>6</td><td>Move the logo, export again</td><td>Zero Manim renders; only quick composites</td></tr>
+    <tr><td>7</td><td>Same project on Colab</td><td>Works for people without strong hardware</td></tr>
+    <tr><td>8</td><td><code>pnp export --spec job.json</code></td><td>Headless; this is how ReelMVP will call it</td></tr>
+  </table>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>8</span></div>
+</section>
+
+<!-- ============ 9. STACK, RISKS, FUTURE ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Stack, risks, future</span></div>
+  <div class="kicker">08 · Technology and risks</div>
+  <h1>Tech stack, risks and the road to ReelMVP</h1>
+
+  <div class="grid2">
+    <div>
+      <h2 style="margin-top:2mm">Tech stack</h2>
+      <table>
+        <tr><th>Area</th><th>Choice</th></tr>
+        <tr><td>Animation</td><td>Manim Community Edition (pinned)</td></tr>
+        <tr><td>Media</td><td>FFmpeg 6+, ffprobe</td></tr>
+        <tr><td>Maths text</td><td>LaTeX (TeX Live subset / TinyTeX), optional</td></tr>
+        <tr><td>Backend</td><td>Python 3.12, FastAPI, Pydantic v2</td></tr>
+        <tr><td>Storage</td><td>SQLite + SQLAlchemy + Alembic; files / Drive</td></tr>
+        <tr><td>Job queue</td><td>Own SQLite queue (no Redis in MVP)</td></tr>
+        <tr><td>Frontend</td><td>React, TypeScript, Vite, Tailwind</td></tr>
+        <tr><td>Editor, terminal</td><td>Monaco, xterm.js</td></tr>
+        <tr><td>Quality</td><td>ruff, pyright, pytest, ESLint, Vitest, Playwright</td></tr>
+        <tr><td>Packaging</td><td>uv / <code>pnp</code> CLI, Docker, Colab notebook</td></tr>
+        <tr><td>AI (later)</td><td>Claude API behind a small interface</td></tr>
+      </table>
+    </div>
+    <div>
+      <h2 style="margin-top:2mm">Main risks</h2>
+      <table>
+        <tr><th>Risk</th><th>Mitigation</th></tr>
+        <tr><td>Colab's terms restrict some web UIs on the free tier</td><td>Use Colab's own proxy, check the terms in Cycle; fall back to paid Colab or local</td></tr>
+        <tr><td>8 GB laptops run out of memory</td><td>Draft quality first, RAM-aware scheduling, benchmarked limits</td></tr>
+        <tr><td>LaTeX install is slow on Colab</td><td>"Skip LaTeX" option, cached install on Drive</td></tr>
+        <tr><td>16:9 scenes look wrong on 9:16</td><td><code>ctx.format</code> helpers, responsive starter scenes, gallery review</td></tr>
+        <tr><td>Too many variants at once</td><td>Plan preview, confirmation, cap of 24</td></tr>
+        <tr><td>Imported projects contain harmful code</td><td>Process limits now; Docker sandbox with no network later</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h2>Future: server mode inside ReelMVP</h2>
+  <figure>
+  <svg viewBox="0 0 800 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Noto Sans, sans-serif">
+    <defs>
+      <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7A8496"/></marker>
+    </defs>
+    <g font-size="11" font-weight="700" text-anchor="middle">
+      <rect x="10" y="50" width="120" height="56" rx="8" fill="#F5F7FA"/><text x="70" y="74" fill="#161B26">ReelMVP</text><text x="70" y="91" font-size="9" font-weight="400" fill="#4A5468">web app / Studio</text>
+      <rect x="160" y="50" width="140" height="56" rx="8" fill="#E3F4F9" stroke="#3BA9C9"/><text x="230" y="74" fill="#161B26">Control plane</text><text x="230" y="91" font-size="9" font-weight="400" fill="#1F7F99">auth · Postgres · billing</text>
+      <rect x="330" y="50" width="110" height="56" rx="8" fill="#F5F7FA"/><text x="385" y="74" fill="#161B26">Queue</text><text x="385" y="91" font-size="9" font-weight="400" fill="#4A5468">Redis / SQS</text>
+      <rect x="470" y="20" width="170" height="44" rx="8" fill="#EAF5E4" stroke="#83C167"/><text x="555" y="47" fill="#161B26">pnp_core worker</text>
+      <rect x="470" y="92" width="170" height="44" rx="8" fill="#EAF5E4" stroke="#83C167"/><text x="555" y="119" fill="#161B26">pnp_core worker</text>
+      <rect x="670" y="50" width="120" height="56" rx="8" fill="#FDF0E1" stroke="#F0AC5F"/><text x="730" y="74" fill="#161B26">S3</text><text x="730" y="91" font-size="9" font-weight="400" fill="#9A5B14">videos</text>
+    </g>
+    <g stroke="#7A8496" stroke-width="1.8" fill="none" marker-end="url(#ar4)">
+      <line x1="130" y1="78" x2="158" y2="78"/><line x1="300" y1="78" x2="328" y2="78"/>
+      <path d="M440 70 L468 44"/><path d="M440 86 L468 112"/>
+      <path d="M640 42 L668 66"/><path d="M640 114 L668 92"/>
+    </g>
+    <text x="555" y="160" text-anchor="middle" font-size="10" fill="#3E7A2A">sandboxed containers · no network · autoscaled</text>
+  </svg>
+  </figure>
+  <p class="small"><b>Unchanged:</b> <code>pnp_core</code>, the scene SDK, the project format, the job spec and the Studio components. <b>Swapped:</b> SQLite → Postgres, local queue → Redis/SQS, disk → S3, single user → multi-tenant accounts, and sandboxing becomes mandatory.</p>
+
+  <div class="foot"><span>Pi &amp; Pixel</span><span>9</span></div>
+</section>
+
+<!-- ============ 10. SAMPLES & LINKS ============ -->
+<section class="page">
+  <div class="runhead"><span>Pi &amp; Pixel · Product overview</span><span>Samples and links</span></div>
+  <div class="kicker">09 · Sample videos</div>
+  <h1>The style we are aiming for</h1>
+  <p class="lead">These videos show the visual standard Pi &amp; Pixel targets. They are <b>style references, not Pi &amp; Pixel output</b>: 3Blue1Brown videos are made by Grant Sanderson with ManimGL, the original library that Manim Community Edition grew out of.</p>
+
+  <div class="vid ours">
+    <div class="play"></div>
+    <div><h3>Pi &amp; Pixel demo reel: "Pythagoras in 60 seconds"</h3><p>16:9 and 9:16, two brands. Rendered with Pi &amp; Pixel itself.</p><span class="pill o">Added after the 🚚 Truck stage</span></div>
+  </div>
+
+  <div class="vid"><div class="play"></div><div>
+    <h3>But what is a neural network? · 3Blue1Brown</h3><p>Long-form 16:9 explainer: layered diagrams, colour-coded maths, smooth transforms.</p>
+    <a href="https://www.youtube.com/watch?v=aircAruvnKk">youtube.com/watch?v=aircAruvnKk</a></div></div>
+
+  <div class="vid"><div class="play"></div><div>
+    <h3>But what is the Fourier Transform? A visual introduction · 3Blue1Brown</h3><p>Graphs, axes and animated functions. The core of what Manim does well.</p>
+    <a href="https://www.youtube.com/watch?v=spUNpyF58BY">youtube.com/watch?v=spUNpyF58BY</a></div></div>
+
+  <div class="vid"><div class="play"></div><div>
+    <h3>But what is a Fourier series? From heat flow to drawing with circles · 3Blue1Brown</h3><p>Complex motion built from simple parts. A good benchmark for long, heavy scenes.</p>
+    <a href="https://www.youtube.com/watch?v=r6sGWTCMz2k">youtube.com/watch?v=r6sGWTCMz2k</a></div></div>
+
+  <div class="vid"><div class="play"></div><div>
+    <h3>Essence of linear algebra (playlist) · 3Blue1Brown</h3><p>A multi-video series. The kind of course ReelMVP could produce as one project.</p>
+    <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</a></div></div>
+
+
+  <div class="vid"><div class="play"></div><div>
+    <h3>Manim Community example gallery</h3><p>Short clips with their full source code: exactly the engine Pi &amp; Pixel runs.</p>
+    <a href="https://docs.manim.community/en/stable/examples.html">docs.manim.community/en/stable/examples.html</a></div></div>
+
+  <div class="grid2" style="margin-top:4mm">
+    <div>
+      <h2 style="margin-top:0">Project links</h2>
+      <table>
+        <tr><td style="width:40%">Repository</td><td><a href="https://github.com/harshdotcom/PiAndPixel">github.com/harshdotcom/PiAndPixel</a></td></tr>
+        <tr><td>Architecture</td><td><code>docs/architecture.md</code></td></tr>
+        <tr><td>Requirements</td><td><code>PRD.txt</code> + <code>docs/requirements.md</code></td></tr>
+        <tr><td>Build plan</td><td><code>AGENTS.md</code> §4</td></tr>
+        <tr><td>Manim CE</td><td><a href="https://github.com/ManimCommunity/manim">github.com/ManimCommunity/manim</a></td></tr>
+      </table>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Glossary</h2>
+      <table>
+        <tr><td style="width:34%">Agent</td><td>Python program that renders, on your PC or Colab</td></tr>
+        <tr><td>Studio</td><td>The browser app that controls the Agent</td></tr>
+        <tr><td>Composition</td><td>One video: an ordered list of scenes</td></tr>
+        <tr><td>Variant</td><td>One output: video × format × brand × params</td></tr>
+        <tr><td>Render unit</td><td>One scene drawn once by Manim, reused</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot"><span>Pi &amp; Pixel · Product overview v0.1</span><span>10</span></div>
+</section>
+
+</body>
+</html>
