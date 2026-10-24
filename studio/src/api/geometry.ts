@@ -30,3 +30,9 @@ export function outputLabel(out: { resolution?: string | null; quality: Quality;
   if (!out.resolution) return out.quality;
   return `${resolutionLabel(out.resolution)} @ ${out.fps ?? "?"} fps`;
 }
+
+/** "480p@15", the compact badge form of outputLabel. */
+export function outputBadge(out: { resolution?: string | null; quality: Quality; fps?: number | null }): string {
+  if (!out.resolution) return out.quality;
+  return `${resolutionLabel(out.resolution)}@${out.fps ?? "?"}`;
+}

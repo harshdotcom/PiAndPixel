@@ -1,21 +1,259 @@
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #0f1115;
-  --color-panel: #161922;
-  --color-raised: #1d212c;
-  --color-line: #2a2f3c;
-  --color-muted: #8b93a5;
-  --color-accent: #58c4dd;
-  --color-error: #fc6255;
-  --color-success: #83c167;
-  --color-warning: #f0ac5f;
+/* Colour, type and motion tokens: docs/ui-design.md §3. Dark only. */
+:root {
+  --bg-app: #141519;
+  --bg-panel: #1b1d23;
+  --bg-header: #22252d;
+  --bg-raised: #2a2e38;
+  --bg-sunken: #0f1013;
+  --line: #2e323c;
+  --line-strong: #3a3f4b;
+  --text: #e6e8ee;
+  --text-2: #a9afbc;
+  --text-3: #6e7482;
+  --accent: #58c4dd;
+  --accent-weak: rgba(88, 196, 221, 0.14);
+  --record: #e5484d;
+  --ok: #83c167;
+  --warn: #f0ac5f;
+  --clip-scene: #3e6f86;
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-panel: 160ms;
+  --dur-max: 180ms;
+  --dur-hover: 80ms;
+  --dur-fade: 120ms;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-app: var(--bg-app);
+  --color-panel: var(--bg-panel);
+  --color-header: var(--bg-header);
+  --color-raised: var(--bg-raised);
+  --color-sunken: var(--bg-sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-accent: var(--accent);
+  --color-accent-weak: var(--accent-weak);
+  --color-record: var(--record);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-clip: var(--clip-scene);
+
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --text-2xs: 10px;
+  --text-2xs--line-height: 12px;
+  --text-xs: 11px;
+  --text-xs--line-height: 14px;
+  --text-sm: 12px;
+  --text-sm--line-height: 16px;
+  --text-base: 13px;
+  --text-base--line-height: 18px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
-  background: var(--color-bg);
-  color: #e6e8ee;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text);
   font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+::selection {
+  background: rgba(88, 196, 221, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-raised);
+  border: 2px solid var(--bg-panel);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Splitters: the 4px gutter between panels, where --bg-app shows through. */
+[data-separator] {
+  background: transparent;
+  transition: background-color var(--dur-hover) linear;
+}
+[data-separator]:hover {
+  background: var(--line-strong);
+}
+[data-separator][data-separator="active"] {
+  background: var(--accent);
+}
+[data-separator][aria-disabled="true"] {
+  background: transparent;
+}
+
+/* Show / hide: panel sizes animate only while a toggle is applied, never while dragging. */
+[data-animating] > [data-panel] {
+  transition: flex-grow var(--dur-panel) var(--ease);
+}
+
+.frame {
+  transition:
+    opacity var(--dur-fade) linear,
+    border-color var(--dur-hover) linear;
+}
+.frame[data-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+.frame[data-maximized] {
+  position: fixed;
+  top: 44px;
+  left: 48px;
+  right: 4px;
+  bottom: 28px;
+  /* The insets size it, not the docked h-full / w-full. */
+  width: auto;
+  height: auto;
+  z-index: 40;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.press {
+  transition:
+    background-color var(--dur-hover) linear,
+    color var(--dur-hover) linear,
+    border-color var(--dur-hover) linear,
+    transform var(--dur-hover) linear;
+}
+.press:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Motion (docs/ui-design.md §3): subtle, fast, no overshoot. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.anim-fade {
+  animation: fade-in var(--dur-fade) var(--ease);
+}
+.anim-pop {
+  animation: pop-in var(--dur-fade) var(--ease);
+}
+.anim-dialog {
+  animation: dialog-in var(--dur-panel) var(--ease);
+}
+.anim-toast {
+  animation: toast-in var(--dur-panel) var(--ease);
+}
+
+/* Indeterminate progress: a highlight sweeps while the total is unknown (never a fake %).
+   No `position` here: plain CSS would beat the element's layered Tailwind positioning. */
+.progress-indeterminate {
+  overflow: hidden;
+}
+.progress-indeterminate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--accent);
+  animation: shimmer 1.2s var(--ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The monitor's scrub bar: a thin track with a small accent thumb. */
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--accent);
+}
+.scrubber::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--accent);
 }

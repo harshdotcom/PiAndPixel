@@ -80,14 +80,25 @@ export function useStartRender(pid: string) {
   });
 }
 
+function renderJobsQuery(pid: string) {
+  return {
+    queryKey: queryKeys.jobs(pid),
+    queryFn: () => apiFetch<Job[]>(`/api/v1/jobs?project=${encodeURIComponent(pid)}&kind=render`),
+  };
+}
+
 /** Standalone render jobs of one project (not export units), newest first; kept fresh by useAgentEvents. */
 export function useJobs(pid: string) {
   return useQuery({
-    queryKey: queryKeys.jobs(pid),
-    queryFn: () => apiFetch<Job[]>(`/api/v1/jobs?project=${encodeURIComponent(pid)}&kind=render`),
-    // The API has no filter for this; export units belong to Recent exports.
-    select: (jobs) => jobs.filter((job) => job.export_id === null),
+    ...renderJobsQuery(pid),
+    // The API has no filter for this; export units are listed with their export.
+    select: (jobs: Job[]) => jobs.filter((job) => job.export_id === null),
   });
+}
+
+/** Every render job of the project, export units included (the timeline reads clip durations from them). */
+export function useAllRenderJobs(pid: string) {
+  return useQuery(renderJobsQuery(pid));
 }
 
 export function useJob(jid: string | null) {

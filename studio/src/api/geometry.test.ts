@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { outputLabel, outputSize, resolutionLabel } from "./geometry";
+import { outputBadge, outputLabel, outputSize, resolutionLabel } from "./geometry";
 
 const landscape = { width: 1920, height: 1080, fps: 30 };
 const portrait = { width: 1080, height: 1920, fps: 30 };
@@ -41,5 +41,13 @@ describe("labels", () => {
     expect(outputLabel({ resolution: "2160p", quality: "final", fps: 60 })).toBe("4K @ 60 fps");
     expect(outputLabel({ quality: "draft" })).toBe("draft");
     expect(outputLabel({ resolution: null, quality: "preview", fps: null })).toBe("preview");
+  });
+});
+
+describe("outputBadge", () => {
+  it("is the compact form, or the quality for older records", () => {
+    expect(outputBadge({ resolution: "480p", fps: 15, quality: "draft" })).toBe("480p@15");
+    expect(outputBadge({ resolution: "2160p", fps: 60, quality: "final" })).toBe("4K@60");
+    expect(outputBadge({ resolution: null, quality: "preview" })).toBe("preview");
   });
 });
