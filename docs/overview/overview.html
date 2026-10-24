@@ -783,7 +783,7 @@
         <tr><td>Media</td><td>FFmpeg 6+, ffprobe</td></tr>
         <tr><td>Maths text</td><td>LaTeX (TeX Live subset / TinyTeX), optional</td></tr>
         <tr><td>Backend</td><td>Python 3.12, FastAPI, Pydantic v2</td></tr>
-        <tr><td>Storage</td><td>SQLite + SQLAlchemy + Alembic; files / Drive</td></tr>
+        <tr><td>Storage</td><td>SQLite (WAL) via stdlib sqlite3 + numbered SQL migrations; files / Drive</td></tr>
         <tr><td>Job queue</td><td>Own SQLite queue (no Redis in MVP)</td></tr>
         <tr><td>Frontend</td><td>React, TypeScript, Vite, Tailwind</td></tr>
         <tr><td>Editor, terminal</td><td>Monaco, xterm.js</td></tr>

@@ -16,12 +16,13 @@ pythagoras/
 │       └── logo.svg
 ├── assets/                  images, fonts, audio
 └── .pnp/                    generated: never edit, safe to delete
-    ├── state.db             SQLite: jobs, artifacts, revisions index
-    ├── revisions/           immutable source snapshots (content-addressed)
-    ├── cache/units/         render-unit clips keyed by cache key
-    ├── exports/             final MP4s
-    └── logs/                per-attempt logs
+    ├── revisions/<sha256>/  immutable source snapshots (content-addressed)
+    ├── jobs/<id>/attempt-N/ per-attempt log (and scratch while running)
+    ├── artifacts/           published MP4s (scene clips and exports) + metadata
+    └── cache/units/         render-unit clips keyed by cache key (P1)
 ```
+
+The job queue and the revision index live in one SQLite file per workspace, `<workspace>/.pnp/state.db` ([ADR-0006](decisions/0006-sqlite-stdlib-job-queue.md)), not inside each project.
 
 > In Colab, the authored files live on Google Drive. `.pnp/cache` and the scratch render directories live on local disk, and only `.pnp/exports` is synced back to Drive.
 
@@ -123,7 +124,7 @@ safe_zones: true                # P1: avoid platform UI on portrait
 |---|---|---|
 | `logo.*`, `watermark` | No | Yes |
 | `theme.*` | Only scenes that render with that theme hash | Yes |
-| Scene source, params, format, quality | Yes, for affected render units | Yes |
+| Scene source, params, format, resolution, fps (or quality) | Yes, for affected render units | Yes |
 | Composition clip order, audio | No | Yes |
 
 ---
@@ -144,7 +145,7 @@ ctx.theme.primary       # "#58C4DD"
 ctx.theme.font          # "Inter"
 ctx.params.get("lang", "en")
 ctx.brand_name          # "acme" (informational; do not draw logos yourself)
-ctx.quality             # "draft" | "preview" | "final"
+ctx.quality             # "draft" | "preview" | "final" (with an explicit resolution: <720p draft, 720p preview, 1080p+ final)
 ```
 
 When `PNP_RENDER_CONTEXT` is not set (plain `manim` CLI), `ctx` returns defaults: `landscape`, the Manim default dark theme, and empty params. This guarantees AC-105.

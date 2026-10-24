@@ -1,0 +1,14 @@
+pnp: 1
+name: Pythagoras explainer
+description: "Visual proof of a² + b² = c²"
+engine: { name: manim }
+compositions:
+  main:
+    title: "Pythagoras in 60 seconds"
+    clips:
+      - { scene: "scenes/intro.py:Intro" }
+      - { scene: "scenes/proof.py:Proof" }
+      - { scene: "scenes/outro.py:Outro" }
+  teaser:
+    clips:
+      - { scene: "scenes/proof.py:Proof", params: { title: "Why a² + b² = c²" } }

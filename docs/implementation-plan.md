@@ -6,10 +6,10 @@ The PRD phases are re-sequenced for bring-your-own compute, branding and variant
 
 | # | Milestone | Outcome | Est.* | Status |
 |---|---|---|---|---|
-| M0 | Foundations | Repo, tooling, Manim + FFmpeg verified locally **and on Colab**, memory benchmark | 2–3 d | ⏳ docs done |
-| M1 | Vertical slice | `pnp render` CLI + Agent + bare Studio plays a rendered scene | 4–5 d | ☐ |
-| M2 | Authoring workflow | Monaco, file tree, scene discovery, live logs, draft/preview/final, revisions | 5–7 d | ☐ |
-| M3 | Jobs and assembly | SQLite queue, DAG, cancel/retry/recovery, compositions, concat, ffprobe validation, 30-min limit | 5–7 d | ☐ |
+| M0 | Foundations | Repo, tooling, Manim + FFmpeg verified locally **and on Colab**, memory benchmark | 2–3 d | ⏳ local done, Colab pending |
+| M1 | Vertical slice | `pnp render` CLI + Agent + bare Studio plays a rendered scene | 4–5 d | ⏳ local done, Colab pending |
+| M2 | Authoring workflow | Monaco, file tree, scene discovery, live logs, draft/preview/final, revisions | 5–7 d | ✅ local (Colab pending) |
+| M3 | Jobs and assembly | SQLite queue, DAG, cancel/retry/recovery, compositions, concat, ffprobe validation, 30-min limit | 5–7 d | ✅ local (Colab pending) |
 | M4 | Brand kits | Brand YAML, logo upload, overlay compositor, 9-point placement editor, theme via `pnp.ctx` | 4–5 d | ☐ |
 | M5 | Formats and variants | 16:9 / 9:16 / 1:1, matrix + plan preview + dedupe, variant gallery | 5–6 d | ☐ |
 | — | **CTO demo** | Script below | — | |
@@ -23,44 +23,46 @@ The PRD phases are re-sequenced for bring-your-own compute, branding and variant
 
 ## M0: Foundations
 
-- [ ] `uv` workspace with `packages/{core,agent,sdk}`, Python 3.12 pinned (`.python-version`)
-- [ ] `studio/` Vite + React + TS, pnpm
-- [ ] ruff, pyright, pytest, eslint, vitest; `make check` runs everything
-- [ ] Pin Manim CE exact version. Verify `manim render` on: this machine, Colab, and the Docker base image
-- [ ] Verify FFmpeg overlay + concat + ffprobe on all three
-- [ ] **Benchmark:** peak RSS and wall time for 3 reference scenes (text, MathTex, 3D) × 3 qualities × 2 formats on local and Colab → seeds `per_job_budget`
-- [ ] Decide the Colab UI exposure method after checking current Colab terms ([ADR-0005](decisions/0005-colab-runtime-mode.md))
-- [ ] `examples/pythagoras` starter project (3 scenes, 2 brands), which doubles as the render test fixture
+- [x] `uv` workspace with `packages/{core,agent,sdk}`, Python 3.12 pinned (`.python-version`)
+- [x] `studio/` Vite + React + TS, pnpm
+- [x] ruff, pyright, pytest, eslint, vitest; `make check` runs everything
+- [ ] Pin Manim CE exact version. Verify `manim render` on: this machine, Colab, and the Docker base image (Manim 0.22.0 verified on this machine; Colab pending; Docker pending)
+- [ ] Verify FFmpeg overlay + concat + ffprobe on all three (ffprobe verified locally; overlay/concat not yet; Colab pending)
+- [ ] **Benchmark:** peak RSS and wall time for 3 reference scenes (text, MathTex, 3D) × 3 qualities × 2 formats on local and Colab → seeds `per_job_budget` (local text scenes × 3 qualities, landscape, in [`benchmarks.md`](benchmarks.md); MathTex/3D, portrait and Colab pending)
+- [ ] Decide the Colab UI exposure method after checking current Colab terms ([ADR-0005](decisions/0005-colab-runtime-mode.md)) (Colab pending)
+- [ ] `examples/pythagoras` starter project (3 scenes, 2 brands), which doubles as the render test fixture (3 scenes done and rendered in both orientations; brands come with T-01)
 
 **Exit:** `make check` is green; the benchmark table is committed to `docs/benchmarks.md`.
 
 ## M1: Vertical slice
 
-- [ ] `pnp_core`: project loader (`pnp.yaml`), `ManimEngine.render_unit()` subprocess with timeout + kill-tree, ffprobe validator
-- [ ] `pnp render <project> --scene X --quality draft` → MP4
-- [ ] `pnp_agent`: FastAPI, token auth, `GET /agent`, `POST /renders` (run inline in a background task for now), artifact stream
-- [ ] Studio: token pairing, one button "Render", `<video>` player
-- [ ] `pnp studio` serves the built Studio and opens the browser
+- [x] `pnp_core`: project loader (`pnp.yaml`), `ManimEngine.render_unit()` subprocess with timeout + kill-tree, ffprobe validator (implemented as `render_scene()`)
+- [x] `pnp render <project> --scene X --quality draft` → MP4
+- [x] `pnp_agent`: FastAPI, token auth, `GET /agent`, `POST /renders` (one-worker thread pool for now), artifact stream
+- [x] Studio: token pairing, one button "Render", `<video>` player
+- [x] `pnp studio` serves the built Studio and opens the browser
 
-**Exit:** create project → render → watch video in the browser (PRD Phase 1 exit). It also works in a throwaway Colab notebook.
+**Exit:** create project → render → watch video in the browser (PRD Phase 1 exit). It also works in a throwaway Colab notebook (Colab pending).
 
 ## M2: Authoring workflow
 
-- [ ] Monaco editor, tabs, unsaved indicator, save with etag
-- [ ] File tree, multi-file projects with imports
-- [ ] AST scene discovery with clear errors
-- [ ] Live log streaming over `WS /events`; Python tracebacks mapped to file:line links
-- [ ] Draft / preview / final quality selector
-- [ ] Immutable revision snapshots, with renders pinned to a revision
-- [ ] Local terminal panel (xterm.js + PTY), loopback only
+- [x] Monaco editor, tabs, unsaved indicator, save with etag
+- [x] File tree, multi-file projects with imports
+- [x] AST scene discovery with clear errors
+- [x] Live log streaming over `WS /events`; Python tracebacks mapped to file:line links
+- [x] Draft / preview / final quality selector (now: resolution 480p–4K and fps 15–60 selects; quality stays as an API/CLI shortcut)
+- [x] Immutable revision snapshots, with renders pinned to a revision
+- [x] Local terminal panel (xterm.js + PTY), loopback only
 
 ## M3: Jobs and assembly
 
-- [ ] `SQLiteQueue`: leases, priorities, DAG dependencies, attempts
-- [ ] Cancel (kill tree), retry, crash recovery on start (`interrupted`)
-- [ ] Compositions in `pnp.yaml`, plus an ordered clip list in the UI
-- [ ] Compositor: concat (copy when possible, otherwise encode); validator rules 1–5
-- [ ] Duration limit (AC-006); preserve previous outputs (AC-007)
+- [x] `SQLiteQueue`: leases, priorities, DAG dependencies, attempts (stdlib `sqlite3`, [ADR-0006](decisions/0006-sqlite-stdlib-job-queue.md))
+- [x] Cancel (kill tree), retry, crash recovery on start (`interrupted`)
+- [x] Compositions in `pnp.yaml`, plus an ordered clip list in the UI
+- [x] Compositor: concat (copy when possible, otherwise encode); validator rules 1–5
+- [x] Duration limit (AC-006); preserve previous outputs (AC-007) (the 30-min limit is covered by unit tests, not by a real 30-minute export)
+
+**Exit:** edit → preview → fix an error → render 3 scenes → export one validated MP4. Verified locally in the Studio (headless Chrome) and through the API, including cancel, retry, `kill -9` recovery, revisions and the terminal.
 
 ## M4: Brand kits
 

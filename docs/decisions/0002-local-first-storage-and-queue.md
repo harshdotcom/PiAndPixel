@@ -6,7 +6,7 @@
 PRD §7.2 recommends PostgreSQL, Redis and S3. Under [ADR-0001](0001-bring-your-own-compute.md), each Agent serves one user on their own machine or a Colab VM, where running three extra services is unreasonable.
 
 ## Decision
-- Metadata and job state: **SQLite** at `<workspace>/.pnp/state.db`, in WAL mode, with migrations via Alembic.
+- Metadata and job state: **SQLite** at `<workspace>/.pnp/state.db`, in WAL mode. Migrations: numbered SQL files on stdlib `sqlite3` ([ADR-0006](0006-sqlite-stdlib-job-queue.md) replaced Alembic).
 - Queue: **durable SQLite queue** with leases, priorities and dependencies, behind a `Queue` interface.
 - Artifacts: **local filesystem** behind an `ArtifactStore` interface; atomic rename on publish.
 - Authored content (`pnp.yaml`, `brand.yaml`, scenes) stays in **files**; the DB indexes it.

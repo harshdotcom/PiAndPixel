@@ -35,7 +35,7 @@ The PRD assumes a hosted, multi-user, server-rendered platform. For the MVP we c
 - Preview jobs have higher priority than final or variant jobs.
 - The Studio shows queue position and why a job is waiting (*"waiting for memory"*).
 
-**FR-104: Low-spec mode (P0).** Draft previews default to 480p15. The Studio offers "draft / preview / final" quality explicitly (PRD FR-015) and shows the expected cost class of each before running.
+**FR-104: Low-spec mode (P0).** Renders default to 480p15. The Studio offers the output explicitly as a resolution (480p, 720p, 1080p, 1440p, 4K) and an fps (15, 24, 30, 60), shows the exact output size, and marks 1440p and 4K as "slower, uses more memory". This replaces the draft / preview / final control of PRD FR-015 in the UI; the API and CLI keep those names as shortcuts.
 
 **FR-105: Colab session safety (P0).**
 - Projects persist to Google Drive. Renders run on Colab's local disk and finished artifacts are copied to Drive. Drive FUSE is too slow for Manim's partial-movie files.

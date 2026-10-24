@@ -102,24 +102,26 @@ These show the visual standard we are aiming for. They are **not** Pi & Pixel ou
 
 ---
 
-## Planned usage
+## Quick start
 
-> These commands describe the **target** experience. They will work once stage 🚲 Cycle is delivered.
+> Stage 🚗 Car works locally: edit a project in the Studio, render scenes at a chosen resolution and fps (480p to 4K, 15 to 60 fps), and export a composition as one validated MP4. Full setup (tools, no-sudo route, LaTeX) is in [`docs/dev-setup.md`](docs/dev-setup.md).
 
 ```bash
-# Local machine
-uv tool install piandpixel        # installs the `pnp` CLI (Python 3.12)
-pnp doctor                        # checks Manim, FFmpeg, LaTeX, RAM, CPU
-pnp studio ./my-projects          # opens the Studio at http://127.0.0.1:7860
+# Local machine, from a clone of this repo
+make setup                        # uv sync + pnpm install
+make studio-build                 # build the Studio into studio/dist
+uv run pnp doctor                 # checks Manim, FFmpeg, LaTeX, RAM, CPU
+uv run pnp render examples/pythagoras --scene scenes/proof.py:Proof --resolution 480p --fps 15
+uv run pnp studio ./workspace     # opens the Studio at http://127.0.0.1:7860/#token=...
 
-# Docker (no local dependency setup)
+# Docker (not available yet)
 docker run --rm -p 127.0.0.1:7860:7860 -v "$PWD/projects:/workspace" piandpixel/agent
 
-# Headless (CI, batch jobs, future ReelMVP workers)
+# Headless export (not available yet; CI, batch jobs, future ReelMVP workers)
 pnp export ./pythagoras --spec job.json
 ```
 
-**Google Colab:** open `colab/PiAndPixel.ipynb` and run the cells. They install dependencies, mount Google Drive and open the Studio through Colab's own proxy. See [ADR-0005](docs/decisions/0005-colab-runtime-mode.md).
+**Google Colab (not available yet):** open `colab/PiAndPixel.ipynb` and run the cells. They install dependencies, mount Google Drive and open the Studio through Colab's own proxy. See [ADR-0005](docs/decisions/0005-colab-runtime-mode.md).
 
 A scene reads its context (format, brand theme, parameters) through one import and stays normal Manim:
 
@@ -158,7 +160,7 @@ Full file format: [`docs/project-format.md`](docs/project-format.md).
 | Animation | Manim Community Edition (pinned) |
 | Media | FFmpeg 6+ / ffprobe; LaTeX optional (for `MathTex`) |
 | Backend (Agent) | Python 3.12, FastAPI, Pydantic v2 |
-| Storage and queue | SQLite + SQLAlchemy + Alembic; own SQLite job queue; files / Google Drive |
+| Storage and queue | SQLite (stdlib `sqlite3`, numbered SQL migrations, [ADR-0006](docs/decisions/0006-sqlite-stdlib-job-queue.md)); own SQLite job queue; files / Google Drive |
 | Studio (frontend) | React, TypeScript, Vite, Tailwind, Monaco editor, xterm.js |
 | Quality | ruff, pyright, pytest · ESLint, Vitest, Playwright |
 | Packaging | uv (`pnp` CLI), Docker image, Colab notebook |

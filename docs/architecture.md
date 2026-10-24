@@ -231,6 +231,8 @@ erDiagram
     ARTIFACT { string id string kind string storage_key float duration int width int height float fps string sha256 }
 ```
 
+The state database is one SQLite file per workspace, **`<workspace>/.pnp/state.db`** (WAL mode, plain `sqlite3` with numbered SQL migrations, see [ADR-0006](decisions/0006-sqlite-stdlib-job-queue.md)). It holds revisions, exports, jobs, job dependencies and job attempts. Revision snapshots, attempt logs and artifacts are files under each project's `.pnp/` folder.
+
 Projects, scenes, brand kits and compositions live **in files** (`pnp.yaml`, `brand.yaml`, `scenes/*.py`) so that they are portable and git-friendly. The database **indexes** them and stores job state and artifact metadata. Binary media are never stored in the database (PRD §7.4).
 
 **Single-user MVP:** the PRD's `User` / `owner_id` model is deferred. Each Agent belongs to one person and is protected by a token. Ownership columns come back in server mode ([ADR-0002](decisions/0002-local-first-storage-and-queue.md)).

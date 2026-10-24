@@ -54,8 +54,8 @@ env: PNP_RENDER_CONTEXT=<scratch>/ctx.json
 cwd: <scratch>/src   (a copy of the revision snapshot, not the live project)
 ```
 
-- The **quality presets** map to resolutions scaled from the format: draft = ¼ resolution at 15 fps, preview = ½ resolution at 30 fps, final = full resolution at 30 fps.
-- Rendering from a **snapshot copy** guarantees that what was rendered is what was recorded (AC-012), and the user can keep editing during a render.
+- The user picks a **resolution** (480p, 720p, 1080p, 1440p, 2160p = the format's short edge; long edge kept to the aspect, rounded to the nearest even number, at most 3840 px) and an **fps** (15, 24, 30, 60) — `pnp_core.formats.output_geometry`. The older **quality presets** are shortcuts for these: draft = 480p @ 15, preview = 720p @ 30, final = 1080p @ the format's fps.
+- Rendering from a **snapshot copy** guarantees that what was rendered is what was recorded (AC-012), and the user can keep editing during a render. An existing snapshot is reused only after its `src/` is re-hashed and still matches; a snapshot changed on disk is replaced with a fresh copy, so a tampered snapshot never renders.
 - Manim's internal cache is disabled; our cache key replaces it.
 
 ### Process controls (SEC-004)
@@ -64,8 +64,9 @@ cwd: <scratch>/src   (a copy of the revision snapshot, not the live project)
 |---|---|---|
 | Wall-clock timeout | Orchestrator timer → SIGTERM, then SIGKILL after 10 s | same timer, `taskkill /T` |
 | Kill whole tree | `start_new_session=True`, `os.killpg` | Job Object (P1) |
-| Memory cap | `RLIMIT_AS` via `preexec_fn` (configurable, default from benchmarks) | Colab: Linux, supported |
-| Process count | `RLIMIT_NPROC` | best effort |
+| Memory cap | `RLIMIT_AS`, set by a small Python launcher that then `exec`s Manim (no `preexec_fn`: unsafe in the threaded Agent). Default: 75% of RAM, at least 4 GiB (a draft render maps ~2 GB) | Colab: Linux, supported |
+| Process count | `RLIMIT_NPROC` = the user's current processes and threads + 512 | best effort; not enforced for root (Colab, Docker as root) |
+| Stray children | After Manim exits, the whole process group is killed, so leftovers cannot hold the log pipe or outlive the render | same |
 | Output size | Check scratch dir size during the run; abort over limit | same |
 | Sandbox (opt-in) | `docker run --network none --memory … --cpus … -v snapshot:ro` | not available in Colab |
 
@@ -99,6 +100,7 @@ ffmpeg -f concat -safe 0 -i clips.txt          # unit clips, identical WxH/fps/p
 - Logo position comes from the anchor, margin, size and per-format overrides, computed in `pnp_core.compositor.layout`. The browser placement preview uses the **same** math (shared test vectors), so preview and output match.
 - If no overlay or audio is needed and all clips match, use `-c copy` concat for speed (PRD FR-023).
 - Before concatenation, verify that every clip has identical width, height, fps, pix_fmt and codec. A mismatch is a bug in planning, not something to paper over.
+- **Today (Car, `pnp_core.compose`):** no logo or audio yet. When every clip matches the requested WxH/fps and each other, the concat is `-c copy`; otherwise it re-encodes with `scale=W:H,fps=FPS` and libx264 CRF 18. The sum of clip durations is checked against the 1800 s limit before FFmpeg runs (`duration_exceeded`). Every unit render is also remuxed with `-movflags +faststart` (`pnp_core.faststart`), so clips and exports start playing before they finish downloading.
 
 ## 5. Validation (FR-024)
 
@@ -124,15 +126,21 @@ stateDiagram-v2
     running --> failed: non-zero / validation error
     running --> timed_out: wall clock
     running --> cancelled: cancel → kill process group
-    running --> interrupted: lease expired (agent crash / Colab disconnect)
+    running --> interrupted: agent shutdown, or lease expired (crash / Colab disconnect)
+    queued --> blocked: a dependency ended unsuccessfully
+    blocked --> queued: the failed dependency is retried
+    blocked --> cancelled: cancel
     failed --> queued: retry (new attempt)
     timed_out --> queued: retry
+    cancelled --> queued: retry
     interrupted --> queued: retry
     completed --> [*]
 ```
 
 - Each attempt has its own log file and scratch dir. Retries never reuse a previous attempt's scratch dir (PRD FR-020).
-- On Agent start: every `running` job with an expired lease becomes `interrupted`, and its scratch dir is deleted (AC-011).
+- The queue lives in `<workspace>/.pnp/state.db` (SQLite, [ADR-0006](decisions/0006-sqlite-stdlib-job-queue.md)); one worker thread runs one job at a time. Queued jobs survive a restart and run after the next start.
+- A running job holds a 30 s lease, renewed every 10 s. On Agent start and on every idle poll (1 s), a `running` job whose lease has expired becomes `interrupted`, and its scratch files are deleted (AC-011). After a hard crash the job is therefore marked `interrupted` within about 30 s of the restart. A clean shutdown marks it `interrupted` at once.
+- Attempt files: `<project>/.pnp/jobs/<job_id>/attempt-<n>/` with `render.log` or `composite.log`. Only logs, `ctx.json` and `manim.cfg` are kept after the attempt.
 - Publishing is an atomic `rename` within the same filesystem, so a crash never leaves a half-written file marked `completed`.
 - Composite jobs depend on their units. If any unit fails, its dependents become `blocked` and are surfaced in the UI. They are not silently skipped.
 

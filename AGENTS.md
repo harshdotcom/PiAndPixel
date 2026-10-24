@@ -130,7 +130,7 @@ Estimates are working days for one developer using Claude Code. Re-estimate afte
 | Media | FFmpeg 6+ / ffprobe |
 | LaTeX | TeX Live subset or TinyTeX (optional; only for `MathTex`/`Tex`) |
 | API | FastAPI, Uvicorn, Pydantic v2, pydantic-settings |
-| Storage | SQLite (WAL) via SQLAlchemy 2 + Alembic; local files / Google Drive |
+| Storage | SQLite (WAL) via stdlib sqlite3 with numbered SQL migrations (ADR-0006); local files / Google Drive |
 | Queue | Own SQLite-backed queue (no Redis in the MVP) |
 | Frontend | React + TypeScript (strict) + Vite, pnpm |
 | Frontend libs | Monaco Editor, xterm.js, TanStack Query, Tailwind CSS |
