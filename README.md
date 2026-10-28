@@ -6,9 +6,9 @@
 
 | | |
 |---|---|
-| **Status** | Design complete · build starts at stage 🚲 Cycle |
-| **What exists today** | Product requirements, architecture, plan. No application code yet |
-| **Next milestone** | CTO demo at the end of stage 🚚 Truck (≈ 6–7 weeks) |
+| **Status** | Local Studio MVP in development |
+| **What exists today** | Browser Studio, local Manim rendering, multi-clip MP4 export, and optional OpenAI/Deepgram narration |
+| **Next milestone** | Continue the roadmap in [`docs/implementation-plan.md`](docs/implementation-plan.md) |
 | **Future home** | The content engine inside **ReelMVP** |
 
 ---
@@ -104,22 +104,18 @@ These show the visual standard we are aiming for. They are **not** Pi & Pixel ou
 
 ## Quick start
 
-> Stage 🚗 Car works locally: edit a project in the Studio, render scenes at a chosen resolution and fps (480p to 4K, 15 to 60 fps), and export a composition as one validated MP4. Full setup (tools, no-sudo route, LaTeX) is in [`docs/dev-setup.md`](docs/dev-setup.md).
+> Setting up a new machine? Follow [`docs/dev-setup.md`](docs/dev-setup.md) first. It covers Windows/WSL2, Linux dependencies, locked Python and Studio installs, Manim, FFmpeg, optional provider keys, and the first launch.
 
 ```bash
-# Local machine, from a clone of this repo
-make setup                        # uv sync + pnpm install
-make studio-build                 # build the Studio into studio/dist
-uv run pnp doctor                 # checks Manim, FFmpeg, LaTeX, RAM, CPU
-uv run pnp render examples/pythagoras --scene scenes/proof.py:Proof --resolution 480p --fps 15
-uv run pnp studio ./workspace     # opens the Studio at http://127.0.0.1:7860/#token=...
-
-# Docker (not available yet)
-docker run --rm -p 127.0.0.1:7860:7860 -v "$PWD/projects:/workspace" piandpixel/agent
-
-# Headless export (not available yet; CI, batch jobs, future ReelMVP workers)
-pnp export ./pythagoras --spec job.json
+# From the repository root, after installing the prerequisites in docs/dev-setup.md
+source scripts/dev-env.sh
+uv sync --locked
+(cd studio && pnpm install --frozen-lockfile && pnpm build)
+uv run --locked pnp doctor
+uv run --locked pnp studio ./workspace
 ```
+
+Open the full tokenized URL printed by the Agent. In the Studio, choose **New project** and select the Pythagoras or Blank template.
 
 **Google Colab (not available yet):** open `colab/PiAndPixel.ipynb` and run the cells. They install dependencies, mount Google Drive and open the Studio through Colab's own proxy. See [ADR-0005](docs/decisions/0005-colab-runtime-mode.md).
 

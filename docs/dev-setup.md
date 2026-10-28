@@ -1,95 +1,200 @@
-# Developer setup
+# Set up Pi & Pixel on a new machine
 
-How to set up and run Pi & Pixel from a clone of this repo.
+This guide sets up the local Agent, Manim renderer, FFmpeg, and browser Studio from a fresh checkout. The supported setup described here is **Ubuntu 24.04**. On Windows, use **WSL2 with Ubuntu 24.04** and run the project inside the Ubuntu shell; native PowerShell is not the supported render environment.
 
-**What you need:** Python 3.12 (via uv), Manim Community 0.22 as a CLI, FFmpeg/ffprobe, Node 22 + pnpm. LaTeX is optional.
+## Requirements
 
-**Windows:** use WSL2 (Ubuntu) and follow route A inside it.
+| Tool | Version | Why it is needed |
+|---|---|---|
+| Ubuntu | 24.04 LTS | Supported local environment; use it directly or through WSL2 |
+| Python | 3.12.x | Required by the workspace; `uv` installs it |
+| `uv` | Current stable | Creates the Python environment from `uv.lock` |
+| Manim Community | 0.22.0 | Renders scene files; installed as a separate CLI tool |
+| FFmpeg + ffprobe | 6 or newer | Composes and validates MP4 exports |
+| Node.js | 22.12 or newer in the 22.x line | Builds the Studio (Vite 8 requirement) |
+| pnpm | 9.15.9 | Installs the Studio dependencies from its lockfile |
+| LaTeX | Optional | Only needed by scenes using `MathTex` or `Tex` |
 
-## 1. Install the tools (pick one route)
+The Python and JavaScript lockfiles pin application dependencies. Manim, FFmpeg, and Node are system tools and are checked separately by `pnp doctor`.
 
-### Route A: Ubuntu / Debian with sudo
+## 1. Install system tools
 
-```bash
-sudo apt install build-essential pkg-config libcairo2-dev libpango1.0-dev ffmpeg
-curl -LsSf https://astral.sh/uv/install.sh | sh    # uv (manages Python 3.12)
-uv tool install manim                              # Manim as an isolated CLI on PATH
-# Node 22 (e.g. from nodesource or nvm), then:
-corepack enable                                    # provides pnpm
+### Windows: install WSL2
+
+Run this in **PowerShell as Administrator**, then restart Windows if prompted and launch Ubuntu from the Start menu:
+
+```powershell
+wsl --install -d Ubuntu-24.04
 ```
 
-### Route B: no sudo (micromamba, conda-forge)
+Complete Ubuntu's first-run username/password setup. Continue with all remaining commands in the **Ubuntu terminal**, not PowerShell.
 
-This is what the main dev machine uses. Everything lives in your home directory.
+### Ubuntu 24.04: install build and media packages
 
 ```bash
-# micromamba: https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html
-micromamba create -n pnp -c conda-forge python=3.12 manim ffmpeg nodejs=22 pnpm
+sudo apt update
+sudo apt install -y git curl ca-certificates build-essential python3-dev pkg-config \
+  libcairo2-dev libpango1.0-dev ffmpeg
+```
+
+Ubuntu 24.04 supplies FFmpeg 6.1 and `ffprobe` with the `ffmpeg` package. The compiler, Python headers, Cairo, Pango, and `pkg-config` are needed to install Manim's rendering dependencies.
+
+### Install uv and Python 3.12
+
+```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source scripts/dev-env.sh                          # puts the env's manim/ffmpeg/node on PATH
+source "$HOME/.local/bin/env"
+uv python install 3.12
 ```
 
-`scripts/dev-env.sh` expects the env at `~/.local/share/mamba/envs/pnp` (override with `PNP_MAMBA_ENV`). On route A it changes nothing. The Makefile sources it for you; source it yourself before running `uv`, `manim` or `pnpm` by hand.
+If `source` says the file does not exist, open a new Ubuntu terminal and run `uv --version`. If it is still not found, add `~/.local/bin` to your shell's `PATH`.
 
-Manim is never imported by the project's Python code. `pnp_core` runs the `manim` CLI as a subprocess, so the project venv does not need Manim installed.
-
-### Check the tools
+### Install Manim
 
 ```bash
-manim --version      # Manim Community v0.22.x
-ffmpeg -version      # 6 or newer
-node --version       # v22.x
+uv tool install --python 3.12 "manim==0.22.0"
+source "$HOME/.local/bin/env"
+```
+
+Manim is a separate command-line program. It does not need to be added to this project's Python dependencies; the Agent launches the `manim` command in a render subprocess.
+
+### Install Node.js 22 and pnpm
+
+Install Node.js 22 with `nvm`, then install the pnpm version used by this project:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+source "$HOME/.bashrc"
+nvm install 22
+nvm use 22
+npm install --global pnpm@9.15.9
+node --version
 pnpm --version
 ```
 
-## 2. Build and run
+The Node 22 version installed must be `22.12.0` or later. This is the minimum supported by the project's Vite version.
+
+## 2. Clone and install the project
+
+Run these commands in the Ubuntu terminal. Keeping the checkout in Ubuntu's home directory is recommended for WSL2; it avoids cross-filesystem performance and file-locking issues.
 
 ```bash
-make setup           # uv sync + pnpm install
-make check           # lint, types and tests (Python + Studio)
-make studio-build    # build the Studio into studio/dist
-make dev             # Agent on ./workspace; prints http://127.0.0.1:7860/#token=...
+mkdir -p "$HOME/src"
+cd "$HOME/src"
+git clone https://github.com/harshdotcom/PiAndPixel.git
+cd PiAndPixel
 ```
 
-### Optional narration providers
+If the repository is private when you set it up, authenticate with GitHub before cloning. Do not put an access token in the clone URL.
 
-The Studio can draft scripts with OpenAI and generate/align voice with Deepgram. Put the keys in the project-root `.env` file, which is ignored by Git, and launch the Agent through `uv` so it loads them into the Agent process environment:
+Install the locked dependencies and build the Studio:
 
 ```bash
-cd /mnt/d/04_Rough/PiAndPixel
 source scripts/dev-env.sh
-uv run --env-file .env pnp studio ./workspace
+uv sync --locked
+cd studio
+pnpm install --frozen-lockfile
+pnpm build
+cd ..
 ```
 
-Edit `.env` locally and fill in `OPENAI_API_KEY` and `DEEPGRAM_API_KEY`. Do not commit or share this file: it contains plain-text secrets. The Agent reads the keys server-side; they are not sent to the browser or render subprocesses. Stop a previously running Agent before starting another. Provider calls may incur separate charges and happen only after you click the relevant action.
+`uv sync --locked` uses the root `uv.lock`; `pnpm install --frozen-lockfile` uses `studio/pnpm-lock.yaml`. The build creates `studio/dist`, which the Agent serves to the browser.
 
-Open the printed URL (the token is in the `#` part and stays in the browser). Stop the server with Ctrl+C.
+## 3. Check the installation
 
-Without the Studio:
+From the repository root, run:
 
 ```bash
-uv run pnp doctor    # shows manim / ffmpeg / ffprobe / latex; exit 1 if a required tool is missing
-uv run pnp render examples/pythagoras --scene scenes/proof.py:Proof --quality draft
-uv run pnp render examples/pythagoras --scene scenes/proof.py:Proof --format portrait --resolution 720p --fps 24
+source scripts/dev-env.sh
+uv run --locked pnp doctor
+manim --version
+ffmpeg -version
+ffprobe -version
+node --version
+pnpm --version
 ```
 
-`--resolution` (480p … 2160p) and `--fps` (15, 24, 30, 60) win over `--quality` (draft = 480p @ 15, preview = 720p @ 30, final = 1080p).
+Confirm that Manim and FFmpeg/ffprobe are found and that Node is `v22.12.0` or later in the 22.x line. A missing LaTeX installation is fine for scenes that use `Text`; install LaTeX only if you need `MathTex` or `Tex`.
 
-`make test-render` runs the slow tests that really call Manim and FFmpeg. On a machine with little RAM, render at draft quality, one render at a time.
+## 4. Start the Studio
 
-To run an example scene with plain Manim, put the sdk on `PYTHONPATH`:
+From the repository root:
 
 ```bash
-cd examples/pythagoras
-PYTHONPATH=../../packages/sdk/src manim render -ql scenes/proof.py Proof
+source scripts/dev-env.sh
+uv run --locked pnp studio ./workspace
 ```
 
-## 3. LaTeX (optional)
+The Agent creates `./workspace` if needed, starts on `127.0.0.1:7860`, and prints a Studio URL containing a temporary access token. Open that **full printed URL** in a browser on the same machine. If WSL does not open the browser automatically, copy the URL into the Windows browser. Keep the token private. It is generated again when the Agent restarts, so use the newly printed URL after a restart. Stop the Agent with **Ctrl+C**.
 
-Only needed for scenes that use `MathTex` or `Tex`. The examples use `Text`, so you can skip it.
+In the Studio, choose **New project**, enter a name, and select **Pythagoras** for the included starter project or **Blank** for an empty Manim project. Click **Render** to make the first preview.
+
+The `workspace/` folder contains your projects and render state. Back it up if you want to preserve work; it is intentionally excluded from Git.
+
+## Optional: enable script drafting and voice generation
+
+OpenAI script drafting and Deepgram voice generation are optional. Without keys, the rest of the Studio still runs. Create a local `.env` file in the repository root and add only the keys for providers you want to use:
+
+```dotenv
+OPENAI_API_KEY=your_openai_key
+DEEPGRAM_API_KEY=your_deepgram_key
+```
+
+Keep the actual values private. `.env` is ignored by Git; never commit keys or paste them into chat, source code, or project files. Provider calls can incur charges and happen only when you click **Draft with OpenAI** or **Generate voice**.
+
+Stop the Agent, then launch it with the local environment file loaded:
 
 ```bash
-sudo apt install texlive-latex-extra texlive-fonts-extra dvisvgm
+source scripts/dev-env.sh
+uv run --locked --env-file .env pnp studio ./workspace
 ```
 
-Without sudo, install TinyTeX in your home directory, or skip LaTeX. `pnp doctor` shows whether it was found.
+If a key is added or changed while the Agent is running, restart the Agent so it reads the new value. The browser never receives provider keys.
+
+## Updating an existing checkout
+
+From the repository root:
+
+```bash
+git pull --ff-only
+source scripts/dev-env.sh
+uv sync --locked
+cd studio
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Restart the Agent after updating backend code. Refresh the browser after rebuilding the Studio.
+
+## Common setup problems
+
+| Symptom | Fix |
+|---|---|
+| `uv`, `manim`, or `pnpm` is not found | Run `source scripts/dev-env.sh`; if needed, open a new terminal after installing the tool. |
+| `manim: command not found` in `pnp doctor` | Install Manim with the command above, then source `~/.local/bin/env` and `scripts/dev-env.sh`. |
+| `ffmpeg` or `ffprobe` is missing | Install Ubuntu's `ffmpeg` package with `sudo apt install ffmpeg`. |
+| `pnp doctor` reports missing LaTeX | This affects `MathTex`/`Tex` scenes only. Install LaTeX or use `Text` instead. |
+| Studio asks for a token after an Agent restart | Open the new full URL printed by the Agent; restarts generate a fresh token. |
+| OpenAI/Deepgram actions are disabled | Check the variable names in `.env`, then restart with `uv run --env-file .env ...`. Never include quotes around the entire `KEY=value` line. |
+| Port 7860 is already in use | Stop the other Agent with Ctrl+C, or start this one with `uv run --locked pnp studio ./workspace --port 7861`. |
+| Render is slow or runs out of memory | Start at draft quality (480p, 15 fps) and run one render at a time. An 8 GB machine is the project's baseline target. |
+
+## Optional LaTeX installation
+
+Install LaTeX only if a scene uses `MathTex` or `Tex`:
+
+```bash
+sudo apt install -y texlive-latex-extra texlive-fonts-extra dvisvgm
+```
+
+These packages use significant disk space. Run `uv run --locked pnp doctor` again after installation to check detection.
+
+## Reference links
+
+- [Manim Community Linux installation](https://docs.manim.community/en/stable/installation/linux.html)
+- [uv installation](https://docs.astral.sh/uv/getting-started/installation/)
+- [uv Python installation](https://docs.astral.sh/uv/guides/install-python/)
+- [Node.js downloads](https://nodejs.org/en/download)
+- [nvm installation instructions](https://github.com/nvm-sh/nvm#installing-and-updating)
+- [Vite Node.js requirement](https://vite.dev/guide/)
+- [pnpm installation](https://pnpm.io/installation)
