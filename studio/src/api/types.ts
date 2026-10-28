@@ -48,6 +48,45 @@ export interface Template {
   description: string;
 }
 
+export interface ProviderStatus {
+  openai: boolean;
+  deepgram: boolean;
+}
+
+export interface NarrationWord {
+  text: string;
+  start: number;
+  end: number;
+  confidence: number;
+  matched: boolean;
+}
+
+export interface NarrationSegment {
+  id: string;
+  text: string;
+  start_offset_s: number;
+  audio_id: string | null;
+  audio_duration_s: number | null;
+  words: NarrationWord[];
+}
+
+export interface NarrationAudioClip {
+  id: string;
+  audio_id: string;
+  start_s: number;
+  source_start_s: number;
+  source_end_s: number;
+  gain: number;
+  enabled: boolean;
+}
+
+export interface NarrationDocument {
+  version: 1;
+  composition: string;
+  segments: NarrationSegment[];
+  audio_clips: NarrationAudioClip[];
+}
+
 export interface ProjectSummary {
   id: string;
   name: string;
@@ -276,6 +315,7 @@ export interface PutCompositionsBody {
 export interface ExportBody extends OutputChoice {
   composition: string;
   format: string;
+  delivery_profile: "custom" | "reels_shorts";
 }
 
 export interface ExportAccepted {
@@ -290,6 +330,7 @@ export interface Export {
   composition: string;
   format: string;
   quality: Quality;
+  delivery_profile: "custom" | "reels_shorts";
   /** null on exports started before resolution/fps could be chosen. */
   resolution: string | null;
   fps: number | null;

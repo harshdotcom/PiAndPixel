@@ -6,6 +6,7 @@ import { useExportSettings } from "../../state/exports";
 import { useStudio } from "../../state/studio";
 import { Button, IconButton } from "../../ui/Button";
 import { Menu, MenuList, type MenuPosition } from "../../ui/Menu";
+import { Select } from "../../ui/Select";
 import { CompositionTabs } from "./CompositionTabs";
 
 interface Props {
@@ -58,6 +59,7 @@ function ExportButton() {
 export function TimelineToolbar({ zoom, onZoom }: Props) {
   const c = useComposition();
   const { connected } = useStudio();
+  const exportSettings = useExportSettings();
   const [menu, setMenu] = useState<{ name: string; at: MenuPosition } | null>(null);
   return (
     <div className="flex h-8 shrink-0 items-center gap-2 border-b border-line px-2">
@@ -82,6 +84,12 @@ export function TimelineToolbar({ zoom, onZoom }: Props) {
         />
       )}
       <Zoom zoom={zoom} onZoom={onZoom} />
+      <Select label="Delivery" small value={exportSettings.deliveryProfile}
+        onChange={(event) => exportSettings.setDeliveryProfile(event.target.value as "custom" | "reels_shorts")}
+        width={148}>
+        <option value="custom">Custom export</option>
+        <option value="reels_shorts">Reels + Shorts</option>
+      </Select>
       <ExportButton />
       {menu && (
         <MenuList

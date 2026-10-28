@@ -102,6 +102,8 @@ ffmpeg -f concat -safe 0 -i clips.txt          # unit clips, identical WxH/fps/p
 - Before concatenation, verify that every clip has identical width, height, fps, pix_fmt and codec. A mismatch is a bug in planning, not something to paper over.
 - **Today (Car, `pnp_core.compose`):** no logo or audio yet. When every clip matches the requested WxH/fps and each other, the concat is `-c copy`; otherwise it re-encodes with `scale=W:H,fps=FPS` and libx264 CRF 18. The sum of clip durations is checked against the 1800 s limit before FFmpeg runs (`duration_exceeded`). Every unit render is also remuxed with `-movflags +faststart` (`pnp_core.faststart`), so clips and exports start playing before they finish downloading.
 
+**Narration path (A-05):** the OpenAI draft uses only the selected Manim scene classes and referenced local helpers, creator context, and the latest measured duration for each composition clip. It targets roughly 2.15 spoken words per second; the creator reviews the script before Deepgram synthesis. Deepgram then transcribes the generated audio for measured word timings. The Studio flags duration mismatch and uncertain words for correction. Voice and captions are added during final composition; WebVTT/SRT can be exported separately, and the final MP4 is checked for audio and video duration agreement.
+
 ## 5. Validation (FR-024)
 
 A final artifact is published only if `ffprobe` confirms:

@@ -6,6 +6,8 @@ import { useRenders } from "./renders";
 
 export interface ExportValue {
   output: OutputControls;
+  deliveryProfile: "custom" | "reels_shorts";
+  setDeliveryProfile: (profile: "custom" | "reels_shorts") => void;
   /** Starts an export of the saved composition; the monitor follows it. */
   start: (composition: string) => void;
   pending: boolean;
@@ -34,12 +36,21 @@ export function ExportProvider({ pid, formats, children }: Props) {
   const output = useOutputControls(pid, "export", formats);
   const { show } = useRenders();
   const [lastExportId, setLastExportId] = useState<string | null>(null);
+  const [deliveryProfile, setDeliveryProfile] = useState<"custom" | "reels_shorts">("custom");
+
+  function chooseDeliveryProfile(profile: "custom" | "reels_shorts") {
+    setDeliveryProfile(profile);
+    if (profile === "reels_shorts") {
+      output.setFormat("portrait");
+      output.update({ resolution: "1080p", fps: 30 });
+    }
+  }
 
   function start(composition: string) {
     const { format, choice } = output;
     if (!choice) return;
     startExport.mutate(
-      { composition, format, ...choice },
+      { composition, format, ...choice, delivery_profile: deliveryProfile },
       {
         onSuccess: ({ export_id }) => {
           setLastExportId(export_id);
@@ -49,6 +60,9 @@ export function ExportProvider({ pid, formats, children }: Props) {
     );
   }
 
-  const value = { output, start, pending: startExport.isPending, error: startExport.error, lastExportId };
+  const value = {
+    output, deliveryProfile, setDeliveryProfile: chooseDeliveryProfile, start,
+    pending: startExport.isPending, error: startExport.error, lastExportId,
+  };
   return <ExportContext.Provider value={value}>{children}</ExportContext.Provider>;
 }

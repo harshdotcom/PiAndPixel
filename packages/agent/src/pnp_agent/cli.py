@@ -120,7 +120,14 @@ def cmd_studio(args: argparse.Namespace) -> int:
     print(f"Pi & Pixel Studio: {url}", flush=True)
     if not args.no_browser:
         webbrowser.open(url)
-    uvicorn.run(create_app(settings), host=args.host, port=args.port)
+    # WebSocket auth uses a query token, which Uvicorn would otherwise write to access logs.
+    uvicorn.run(
+        create_app(settings),
+        host=args.host,
+        port=args.port,
+        access_log=False,
+        log_level="warning",
+    )
     return 0
 
 

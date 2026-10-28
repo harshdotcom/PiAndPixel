@@ -24,6 +24,9 @@ class MediaInfo:
     pix_fmt: str
     has_audio: bool
     video_streams: int = 1
+    audio_codec: str | None = None
+    audio_sample_rate: int | None = None
+    audio_duration_s: float | None = None
 
 
 def _run_ffprobe(path: Path, ffprobe: str) -> dict[str, Any]:
@@ -57,9 +60,11 @@ def probe(path: Path, *, ffprobe: str = "ffprobe") -> MediaInfo:
     data = _run_ffprobe(path, ffprobe)
     streams: list[dict[str, Any]] = data.get("streams") or []
     videos = [s for s in streams if s.get("codec_type") == "video"]
+    audios = [s for s in streams if s.get("codec_type") == "audio"]
     if not videos:
         raise ProbeError(f"{path.name} has no video stream")
     video = videos[0]
+    audio = audios[0] if audios else {}
     fmt: dict[str, Any] = data.get("format") or {}
     duration = video.get("duration") or fmt.get("duration") or 0
     try:
@@ -72,6 +77,9 @@ def probe(path: Path, *, ffprobe: str = "ffprobe") -> MediaInfo:
             pix_fmt=str(video.get("pix_fmt", "")),
             has_audio=any(s.get("codec_type") == "audio" for s in streams),
             video_streams=len(videos),
+            audio_codec=str(audio["codec_name"]) if audio.get("codec_name") else None,
+            audio_sample_rate=int(audio["sample_rate"]) if audio.get("sample_rate") else None,
+            audio_duration_s=(float(audio["duration"]) if audio.get("duration") else None),
         )
     except (TypeError, ValueError) as exc:
         raise ProbeError(f"ffprobe output for {path.name} is malformed: {exc}") from None

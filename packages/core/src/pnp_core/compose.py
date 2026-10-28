@@ -34,6 +34,20 @@ class ComposeRequest:
     height: int
     fps: int
     max_duration_s: float = MAX_EXPORT_DURATION_S
+    audio: Path | None = None
+    audio_duration_s: float | None = None
+    audio_start_s: float = 0
+    audio_clips: tuple["ComposeAudioClip", ...] = ()
+    audio_required: bool = False
+
+
+@dataclass(frozen=True)
+class ComposeAudioClip:
+    path: Path
+    start_s: float = 0
+    source_start_s: float = 0
+    source_end_s: float | None = None
+    gain: float = 1
 
 
 @dataclass(frozen=True)
@@ -92,18 +106,73 @@ def concat_list(clips: Sequence[Path]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def ffmpeg_command(ffmpeg: str, req: ComposeRequest, workdir: Path, *, copy: bool) -> list[str]:
+def _audio_sources(req: ComposeRequest) -> list[ComposeAudioClip]:
+    if req.audio_clips:
+        return list(req.audio_clips)
+    if req.audio:
+        return [
+            ComposeAudioClip(
+                req.audio,
+                start_s=req.audio_start_s,
+                source_end_s=req.audio_duration_s,
+            )
+        ]
+    return []
+
+
+def ffmpeg_command(
+    ffmpeg: str, req: ComposeRequest, workdir: Path, *, copy: bool, duration_s: float = 0.0
+) -> list[str]:
     head = [
         ffmpeg, "-hide_banner", "-nostdin", "-y", "-f", "concat", "-safe", "0",
-        "-i", str(workdir / "clips.txt"), "-map", "0:v:0", "-an",
+        "-i", str(workdir / "clips.txt"),
     ]  # fmt: skip
-    if copy:
+    audio_sources = _audio_sources(req)
+    for source in audio_sources:
+        head += ["-i", str(source.path)]
+    if req.audio_required and not audio_sources:
+        head += [
+            "-f",
+            "lavfi",
+            "-t",
+            f"{duration_s:.6f}",
+            "-i",
+            "anullsrc=channel_layout=stereo:sample_rate=48000",
+        ]
+    head += ["-map", "0:v:0"]
+    if audio_sources:
+        filters: list[str] = []
+        labels: list[str] = []
+        for index, source in enumerate(audio_sources, start=1):
+            label = f"a{index}"
+            trim = f"atrim=start={source.source_start_s:.6f}"
+            if source.source_end_s is not None:
+                trim += f":end={source.source_end_s:.6f}"
+            delay_ms = round(source.start_s * 1000)
+            filters.append(
+                f"[{index}:a]{trim},asetpts=PTS-STARTPTS,volume={source.gain:.4f},"
+                f"adelay={delay_ms}|{delay_ms},apad,"
+                f"atrim=duration={duration_s:.6f},aresample=48000[{label}]"
+            )
+            labels.append(f"[{label}]")
+        filters.append(
+            f"{''.join(labels)}amix=inputs={len(labels)}:duration=longest:"
+            "dropout_transition=0:normalize=0[mix]"
+        )
+        head += ["-filter_complex", ";".join(filters), "-map", "[mix]"]
+    elif req.audio_required:
+        head += ["-map", "1:a"]
+    else:
+        head += ["-an"]
+    if copy and not audio_sources and not req.audio_required:
         codec = ["-c", "copy"]
     else:
         codec = [
             "-vf", f"scale={req.width}:{req.height},fps={req.fps}",
             "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
         ]  # fmt: skip
+    if audio_sources or req.audio_required:
+        codec += ["-c:a", "aac", "-b:a", "192k", "-ar", "48000"]
     tail = ["-movflags", "+faststart", "-progress", "pipe:1", "-nostats"]
     return [*head, *codec, *tail, str(workdir / "export.mp4")]
 
@@ -155,10 +224,24 @@ def _validate(
     except ProbeError as exc:
         return "probe_error", str(exc)
     durations = [i.duration_s for i in infos]
-    return check_export(
+    problem = check_export(
         info, width=req.width, height=req.height, fps=req.fps,
         clip_durations=durations, max_duration_s=req.max_duration_s,
     )  # fmt: skip
+    if problem is not None:
+        return problem
+    has_audio = bool(_audio_sources(req) or req.audio_required)
+    if has_audio and not info.has_audio:
+        return "validation_error", "export is missing the requested narration audio"
+    if has_audio and info.audio_codec != "aac":
+        return "validation_error", f"audio codec is {info.audio_codec}, expected aac"
+    if has_audio and info.audio_sample_rate != 48000:
+        return "validation_error", "narration audio sample rate is not 48000 Hz"
+    if has_audio and (
+        info.audio_duration_s is None or abs(info.audio_duration_s - info.duration_s) > 0.15
+    ):
+        return "validation_error", "audio duration does not match the video duration"
+    return None
 
 
 _Outcome = tuple[RenderStatus, int | None, tuple[str, str] | None]
@@ -175,7 +258,13 @@ def _concat(
 ) -> _Outcome:
     """Run ffmpeg's concat into <workdir>/export.mp4, then probe and check the result."""
     (workdir / "clips.txt").write_text(concat_list(req.clips), encoding="utf-8")
-    cmd = ffmpeg_command(tools.ffmpeg, req, workdir, copy=can_stream_copy(infos, req))
+    cmd = ffmpeg_command(
+        tools.ffmpeg,
+        req,
+        workdir,
+        copy=can_stream_copy(infos, req),
+        duration_s=sum(info.duration_s for info in infos),
+    )
     try:
         outcome = run_process(
             cmd, cwd=workdir, env=ffmpeg_env(workdir), log_path=workdir / "composite.log",
@@ -231,6 +320,10 @@ def compose_export(
     if total_s > req.max_duration_s:
         message = f"clips add up to {total_s:.1f}s, over the {req.max_duration_s:g}s limit"
         return done("failed", None, ("duration_exceeded", message))
+    for audio in _audio_sources(req):
+        source_duration = (audio.source_end_s or 0) - audio.source_start_s
+        if audio.start_s + source_duration > total_s + 1 / req.fps:
+            return done("failed", None, ("validation_error", "narration is longer than the video"))
     splitter = _OutputSplitter(total_s, on_line, on_progress)
     status, code, problem = _concat(req, workdir, infos, tools, limits, splitter, cancel)
     return done(status, code, problem)

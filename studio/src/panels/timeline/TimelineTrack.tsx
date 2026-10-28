@@ -1,17 +1,24 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import type { DraftClip } from "../../state/clips";
+import type { NarrationAudioClip } from "../../api/types";
 import { formatDuration } from "../monitor/timecode";
 import { ClipBlock } from "./ClipBlock";
+import { AudioClipBlock } from "./AudioClipBlock";
 import { rulerTicks, type ClipBox } from "./timelineMath";
 import { useClipDrag } from "./useClipDrag";
 
 interface Props {
   clips: DraftClip[];
+  audioClips: NarrationAudioClip[];
   boxes: ClipBox[];
   pxPerSecond: number;
   selectedClip: number | null;
+  selectedAudioClip: string | null;
   onSelect: (id: number | null) => void;
   onRemove: (id: number) => void;
+  onSelectAudioClip: (id: string | null) => void;
+  onMoveAudioClip: (id: string, start: number) => void;
+  onRemoveAudioClip: (id: string) => void;
   onReorder: (from: number, to: number) => void;
   onOpen: (clip: DraftClip) => void;
   /** Seconds of the linked export playing in the monitor, or null when not linked. */
@@ -56,6 +63,7 @@ function TrackHeads() {
     <div style={{ width: HEAD_PX }} className="shrink-0 border-r border-line bg-header">
       <div className="h-6 border-b border-line" />
       <div className="flex h-[60px] items-center justify-center border-b border-line font-mono text-xs font-semibold text-fg-2">V1</div>
+      <div className="flex h-[54px] items-center justify-center border-b border-line font-mono text-xs font-semibold text-fg-2">A1</div>
     </div>
   );
 }
@@ -93,16 +101,37 @@ function ClipLane(props: Props) {
   );
 }
 
+function AudioLane(props: Props) {
+  return (
+    <div role="list" aria-label="Track A1" className="relative h-[54px] border-b border-line bg-panel"
+      onClick={(event) => event.target === event.currentTarget && props.onSelectAudioClip(null)}>
+      {props.audioClips.length === 0 && <span className="absolute inset-y-0 left-2 flex items-center text-2xs text-fg-3">
+        Generate a voice, then choose “Add voice to timeline” in the Voice panel.
+      </span>}
+      {props.audioClips.map((clip) => <div role="listitem" key={clip.id}>
+        <AudioClipBlock clip={clip} pxPerSecond={props.pxPerSecond}
+          selected={clip.id === props.selectedAudioClip}
+          onSelect={() => props.onSelectAudioClip(clip.id)}
+          onMove={(start) => props.onMoveAudioClip(clip.id, start)} />
+      </div>)}
+    </div>
+  );
+}
+
 /** Ruler, track V1 with its clips, and the playhead; Delete removes the selected clip. */
 export function TimelineTrack(props: Props) {
-  const { boxes, pxPerSecond: pps, selectedClip, onRemove, playhead } = props;
+  const { boxes, audioClips, pxPerSecond: pps, selectedClip, selectedAudioClip, onRemove, onRemoveAudioClip, playhead } = props;
   const last = boxes.at(-1);
-  const seconds = Math.max(10, ((last ? last.x + last.width : 0) + TAIL_PX) / pps);
+  const audioEnd = Math.max(0, ...audioClips.map((clip) => clip.start_s + clip.source_end_s - clip.source_start_s));
+  const videoEnd = last ? last.x + last.width : 0;
+  const seconds = Math.max(10, (Math.max(videoEnd, audioEnd * pps) + TAIL_PX) / pps);
 
   function onKeyDown(e: KeyboardEvent) {
-    if ((e.key === "Delete" || e.key === "Backspace") && selectedClip !== null) {
+    if (e.target instanceof HTMLElement && e.target.closest("input, textarea, select")) return;
+    if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
-      onRemove(selectedClip);
+      if (selectedAudioClip) onRemoveAudioClip(selectedAudioClip);
+      else if (selectedClip !== null) onRemove(selectedClip);
     }
   }
 
@@ -113,6 +142,7 @@ export function TimelineTrack(props: Props) {
         <div style={{ width: seconds * pps }} className="relative min-w-full">
           <Ruler seconds={seconds} pps={pps} onSeek={props.onSeek} />
           <ClipLane {...props} />
+          <AudioLane {...props} />
           {playhead !== null && <Playhead x={playhead * pps} />}
         </div>
       </div>

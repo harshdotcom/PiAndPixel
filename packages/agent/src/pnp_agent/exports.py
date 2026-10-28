@@ -42,9 +42,13 @@ def plan_units(clips: Sequence[Clip]) -> tuple[list[RenderUnit], list[int]]:
     return units, clip_units
 
 
-def request_hash(composition: str, fmt: str, output: dict[str, Any]) -> str:
+def request_hash(
+    composition: str, fmt: str, output: dict[str, Any], extra: dict[str, Any] | None = None
+) -> str:
     """Same composition, format and output choices (resolution, fps, size) = same request."""
     body = {"composition": composition, "format": fmt, **output}
+    if extra:
+        body.update(extra)
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode()).hexdigest()
 
@@ -66,6 +70,7 @@ def export_json(export: ExportRecord, jobs: Sequence[JobRecord]) -> dict[str, An
         "composition": export.composition,
         "format": export.format,
         "quality": export.quality,
+        "delivery_profile": composite.request.get("delivery_profile", "custom"),
         **{k: composite.request.get(k) for k in _OUTPUT_KEYS},
         "status": export_status(units, composite),
         "revision_id": export.revision_id,

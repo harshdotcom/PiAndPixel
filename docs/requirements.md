@@ -1,6 +1,6 @@
-# Requirements Addendum (v1.1)
+# Requirements Addendum (v1.2)
 
-This document **extends** [`PRD.txt`](../PRD.txt) v1.0. Every PRD requirement still applies unless it is listed under §6 *Deviations*. New requirement IDs start at FR-100 so they never clash with the PRD.
+This document **extends** [`PRD.txt`](../PRD.txt) v1.0. Every PRD requirement still applies unless it is listed under §7 *Deviations*. New requirement IDs start at FR-100 so they never clash with the PRD.
 
 Priorities follow the PRD: **P0** is required for the MVP / CTO demo, **P1** follows the first end-to-end version, and **P2** is post-MVP.
 
@@ -118,7 +118,27 @@ The user confirms before any work starts. A configurable cap (default 24 variant
 
 ---
 
-## 6. Deviations from PRD v1.0
+## 6. Narration, timed captions and social delivery
+
+These requirements add the optional spoken-video workflow for the creator studio. They extend FR-127 (background audio) with narration, transcript review and timing. External generation is always user initiated.
+
+**FR-140: Editable narration draft (P1).** A creator may request a narration draft from selected scene source, user-provided context, and the measured composition duration using the OpenAI API. The prompt must not send unrelated project files or secrets. Target speech length is estimated at about 2.15 words per second and remains editable. The result is a draft only: the creator reviews and edits it before audio generation. A project can also use a manually written transcript without OpenAI.
+
+**FR-141: Voice generation (P1).** The creator may generate narration audio from approved transcript segments using Deepgram text-to-speech. Segments are associated with composition clips so a change to narration does not rerender Manim scenes. The project stores generated audio and transcript metadata as local project assets. Regenerating a segment invalidates its audio and alignment, then recomposites the export.
+
+**FR-142: Word timing and review (P1).** After synthesis, Deepgram speech-to-text provides word start/end times against the actual generated audio. The Agent aligns those recognized words to the approved transcript, preserves the provider's confidence, and marks unmatched or low-confidence spans for review. It must not claim perfect synchronization when recognition is uncertain. The Studio lets creators correct timing and text on the timeline before final export.
+
+**FR-143: Caption outputs (P1).** The creator may export timed captions as WebVTT or SRT, and may optionally burn captions into the video. Caption style and line breaks are editable. Preview and export keep text within the selected format's configured safe area.
+
+**FR-144: Narration mix and export validation (P1).** Voice audio is mixed during the final FFmpeg composite step, with adjustable start offset and voice/music levels. A voice or caption change must not enqueue Manim render units. The final export is checked for requested dimensions, frame rate, duration, playable audio, and audio/video duration agreement before it replaces a previous successful artifact.
+
+**FR-145: Social delivery profiles (P1).** Provide a shared vertical profile for Instagram Reels and YouTube Shorts at 9:16, 1080×1920, 30 fps, H.264 video and AAC audio. The profile applies a common three-minute duration cap for cross-posting; a YouTube Shorts-only export may use YouTube's current three-minute limit. Platform rules are versioned/configurable rather than embedded throughout the renderer. The Studio warns that upload eligibility and safe zones can change by platform and account.
+
+**FR-146: Credential handling and cost control (P0 for provider integration).** `OPENAI_API_KEY` and `DEEPGRAM_API_KEY` are read only by the local Agent from its process environment. They must never be returned by an API, sent to the browser, written into project files, render subprocess environments, or logs. Each paid provider action requires an explicit creator action and shows which provider will be called. Missing credentials disable only the related feature and produce a clear setup message.
+
+**FR-147: Narration timeline editing (P1).** Generated voice audio can be added to an A1 timeline track as an independently editable clip. Creators can move it, trim its source range, enable or disable it, split it at the playhead, and delete it. Export mixes enabled clips at their timeline positions. Audio-only edits reuse completed scene renders when the source revision, render settings, and scene parameters match; they must not rerender Manim for an unchanged scene.
+
+## 7. Deviations from PRD v1.0
 
 | PRD item | MVP behaviour | Reason | Restored when |
 |---|---|---|---|
@@ -136,7 +156,7 @@ All deviations are recorded as ADRs in [`decisions/`](decisions/).
 
 ---
 
-## 7. Additional acceptance criteria
+## 8. Additional acceptance criteria
 
 **AC-100 Colab end-to-end.** On a fresh Colab runtime, running the notebook cells top to bottom lets a user open the Studio, render the starter project at draft quality, and download an MP4, with no local installs.
 
@@ -154,9 +174,15 @@ All deviations are recorded as ADRs in [`decisions/`](decisions/).
 
 **AC-107 Headless parity.** `pnp export` with the same job spec produces byte-identical *plans* (same render units and cache keys) as the Studio.
 
+**AC-108 Voice edits are cheap.** After a successful Manim export, changing narration text, generated voice, word timings, or caption styling creates no Manim render jobs; only affected voice/alignment and composite artifacts are regenerated.
+
+**AC-109 Social export is measurable.** A vertical social export is validated as 1080×1920 at 30 fps with playable AAC audio and duration within the selected delivery profile. Its VTT/SRT captions use the same reviewed word timings as the Studio preview.
+
+**AC-110 Provider secrets stay local.** OpenAI and Deepgram keys are absent from API responses, browser storage, project files, render subprocess environments, and logs. Provider requests occur only after an explicit creator action.
+
 ---
 
-## 8. Non-functional targets (to be confirmed by Phase 0 benchmarks)
+## 9. Non-functional targets (to be confirmed by Phase 0 benchmarks)
 
 | Area | Target |
 |---|---|
@@ -168,7 +194,7 @@ All deviations are recorded as ADRs in [`decisions/`](decisions/).
 
 ---
 
-## 9. Open questions for CTO review
+## 10. Open questions for CTO review
 
 1. **Colab terms of use.** Colab's free tier restricts some remote-UI/proxy usage. We plan to show the Studio through Colab's own port proxy, not third-party tunnels. Do we need legal sign-off, or should Colab be "paid tier only" for public users? See [ADR-0005](decisions/0005-colab-runtime-mode.md).
 2. **ReelMVP contract.** Will ReelMVP call Pi & Pixel as a CLI/job spec, as a Python library, or through an HTTP API? This decides how much of the Agent API we freeze.

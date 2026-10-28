@@ -96,6 +96,19 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   return (await res.json()) as T;
 }
 
+export async function apiBlob(path: string): Promise<Blob> {
+  const headers = new Headers();
+  const token = getToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(path, { headers });
+  if (res.status === 401) {
+    clearToken();
+    unauthorizedListeners.forEach((listener) => listener());
+  }
+  if (!res.ok) throw await toApiError(res);
+  return res.blob();
+}
+
 export function apiPost<T>(path: string, body: unknown, headers?: HeadersInit): Promise<T> {
   return apiFetch<T>(path, { method: "POST", body: JSON.stringify(body), headers });
 }

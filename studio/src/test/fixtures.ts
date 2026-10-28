@@ -47,6 +47,7 @@ export function makeExport(overrides: Partial<Export> = {}): Export {
     composition: "main",
     format: "landscape",
     quality: "draft",
+    delivery_profile: "custom",
     resolution: "480p",
     fps: 15,
     width: 854,

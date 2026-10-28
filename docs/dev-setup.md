@@ -51,6 +51,18 @@ make studio-build    # build the Studio into studio/dist
 make dev             # Agent on ./workspace; prints http://127.0.0.1:7860/#token=...
 ```
 
+### Optional narration providers
+
+The Studio can draft scripts with OpenAI and generate/align voice with Deepgram. Put the keys in the project-root `.env` file, which is ignored by Git, and launch the Agent through `uv` so it loads them into the Agent process environment:
+
+```bash
+cd /mnt/d/04_Rough/PiAndPixel
+source scripts/dev-env.sh
+uv run --env-file .env pnp studio ./workspace
+```
+
+Edit `.env` locally and fill in `OPENAI_API_KEY` and `DEEPGRAM_API_KEY`. Do not commit or share this file: it contains plain-text secrets. The Agent reads the keys server-side; they are not sent to the browser or render subprocesses. Stop a previously running Agent before starting another. Provider calls may incur separate charges and happen only after you click the relevant action.
+
 Open the printed URL (the token is in the `#` part and stays in the browser). Stop the server with Ctrl+C.
 
 Without the Studio:

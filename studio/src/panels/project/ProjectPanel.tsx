@@ -7,13 +7,15 @@ import { Tabs } from "../../ui/Tabs";
 import { FileTree } from "./FileTree";
 import { RenderBin, type BinView } from "./RenderBin";
 import { SceneList } from "./SceneList";
+import { NarrationPanel } from "./NarrationPanel";
 
-type BinTab = "files" | "scenes" | "renders";
+type BinTab = "files" | "scenes" | "renders" | "narration";
 
 const TABS: { id: BinTab; label: string }[] = [
   { id: "files", label: "Files" },
   { id: "scenes", label: "Scenes" },
   { id: "renders", label: "Renders" },
+  { id: "narration", label: "Voice" },
 ];
 
 function ViewToggle({ view, onChange }: { view: BinView; onChange: (view: BinView) => void }) {
@@ -41,6 +43,7 @@ export function ProjectPanel({ pid }: { pid: string }) {
         {tab === "files" && <FileTree pid={pid} connected={connected} />}
         {tab === "scenes" && <SceneList />}
         {tab === "renders" && <RenderBin view={view} />}
+        {tab === "narration" && <NarrationPanel pid={pid} />}
       </div>
     </PanelFrame>
   );

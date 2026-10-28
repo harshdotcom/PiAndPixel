@@ -4,9 +4,11 @@ import uuid
 from collections import deque
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import closing
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Protocol
 
+from pnp_core.artifacts import ArtifactStore
 from pnp_core.compose import ComposeRequest, ComposeResult
 from pnp_core.formats import Output, Quality
 from pnp_core.manifest import Clip
@@ -143,26 +145,61 @@ class JobManager:
         output: Output,
         clips: Sequence[Clip],
         idempotency_key: str | None,
+        delivery_profile: str = "custom",
+        voice_audio: dict[str, Any] | list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, Any], bool]:
         chosen = output_request(output)
         rev_id, eid, project = self._snapshot(root), uuid.uuid4().hex, root.name
         units, clip_units = plan_units(clips)
-        unit_jobs = [
-            new_job(uuid.uuid4().hex, project, "render", _priority(output),
-                    {"scene": u.scene, "format": fmt_name, "params": u.params, **chosen},
-                    revision_id=rev_id, export_id=eid)
-            for u in units
-        ]  # fmt: skip
+        artifact_store = ArtifactStore(root / ".pnp" / "artifacts")
+        previous_renders = self._store.list_jobs(project, kind="render", limit=5000)
+        unit_jobs = []
+        for unit in units:
+            request = {"scene": unit.scene, "format": fmt_name, "params": unit.params, **chosen}
+            cached = next(
+                (
+                    job
+                    for job in previous_renders
+                    if job.status == "completed"
+                    and job.revision_id == rev_id
+                    and job.request == request
+                    and job.artifact_id
+                    and artifact_store.get(job.artifact_id) is not None
+                ),
+                None,
+            )
+            job = new_job(
+                uuid.uuid4().hex,
+                project,
+                "render",
+                _priority(output),
+                request,
+                revision_id=rev_id,
+                export_id=eid,
+            )
+            if cached is not None:
+                job = replace(
+                    job, status="completed", finished_at=now_iso(), artifact_id=cached.artifact_id
+                )
+            unit_jobs.append(job)
         composite_request = {
             "composition": composition, "format": fmt_name, **chosen,
+            "delivery_profile": delivery_profile,
+            "max_duration_s": 180 if delivery_profile == "reels_shorts" else 1800,
             "clips": [{"scene": c.scene, "params": dict(c.params), "unit_job_id": unit_jobs[i].id}
                       for c, i in zip(clips, clip_units, strict=True)],
         }  # fmt: skip
+        if voice_audio:
+            composite_request["voice_audio"] = voice_audio
         composite = new_job(uuid.uuid4().hex, project, "composite", PRIORITY_COMPOSITE,
                             composite_request, revision_id=rev_id, export_id=eid,
                             depends_on=tuple(j.id for j in unit_jobs))  # fmt: skip
         export = ExportRecord(eid, project, composition, fmt_name, output.quality.value, rev_id,
-                              idempotency_key, request_hash(composition, fmt_name, chosen),
+                              idempotency_key, request_hash(
+                                  composition, fmt_name, chosen,
+                                  {"delivery_profile": delivery_profile,
+                                   "voice_audio": voice_audio},
+                              ),
                               now_iso())  # fmt: skip
         record, created = self._store.create_export(export, [*unit_jobs, composite])
         if record.request_hash != export.request_hash:

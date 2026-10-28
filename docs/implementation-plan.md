@@ -118,3 +118,18 @@ The PRD phases are re-sequenced for bring-your-own compute, branding and variant
 | 8 GB laptops OOM on 1080p 3D scenes | Benchmark-driven memory budget, a single slot on low RAM, draft-first workflow |
 | Scenes written for 16:9 look wrong on 9:16 | `pnp.ctx.format` helpers, starter scenes that demonstrate responsive layout, and a gallery that makes problems visible |
 | Variant explosion | Plan preview, confirmation, and `max` cap |
+
+## A-05: Narration and timed captions
+
+Expanded from the planned audio-track task in `AGENTS.md`. Start after the Truck exit test so narration builds on stable formats and export variants.
+
+- [x] Draft narration from creator context with OpenAI; creator reviews it before synthesis
+- [x] Generate one editable voice segment per composition with Deepgram; keys stay in the Agent environment
+- [x] Transcribe generated audio with Deepgram word timestamps; align against the script and flag uncertain words
+- [x] Add editable word timings and WebVTT/SRT downloads in the Studio
+- [x] Mix narration in the FFmpeg composite stage without rerendering Manim
+- [x] Add a 1080×1920, 30 fps, three-minute cross-post profile with final media validation
+- [x] Add an A1 narration timeline with move, trim, split, enable/disable, delete, and mix enabled clips during export without rerendering matching scenes
+- [ ] Add per-clip voice generation, burned-in caption styling, safe-zone preview, and audio level controls
+
+The existing `portrait` format already produces 1080×1920 at 30 fps when exported at 1080p. A cross-post profile should keep the video at 9:16 and cap duration at three minutes, with platform-specific checks kept separate because platform rules can change.

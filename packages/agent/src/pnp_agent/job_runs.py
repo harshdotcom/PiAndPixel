@@ -8,10 +8,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pnp_core.artifacts import ArtifactStore
-from pnp_core.compose import ComposeRequest
+from pnp_core.compose import ComposeAudioClip, ComposeRequest
 from pnp_core.errors import PnpError
 from pnp_core.formats import Quality
 from pnp_core.manifest import load_manifest
+from pnp_core.paths import safe_join
 from pnp_core.probe import MAX_CLIP_DURATION_S, MediaInfo, check_clip
 from pnp_core.render import CancelToken, RenderLimits, RenderRequest, ToolPaths
 from pnp_core.revisions import load_revision
@@ -104,8 +105,29 @@ def run_composite(
         if artifact is None:
             return Finish("failed", f"No video for clip {clip['scene']}", "internal_error")
         clips.append(artifact.path)
+    voice = req.get("voice_audio")
+    voice_clips = [voice] if isinstance(voice, dict) else voice or []
+    audio_clips = []
+    for clip in voice_clips:
+        audio = safe_join(workspace / job.project, clip["path"])
+        if not audio.is_file():
+            return Finish("failed", "Generated narration audio is missing", "not_found")
+        audio_clips.append(
+            ComposeAudioClip(
+                path=audio,
+                start_s=clip.get("start_s", clip.get("start_offset_s", 0)),
+                source_start_s=clip.get("source_start_s", 0),
+                source_end_s=clip.get("source_end_s", clip.get("duration_s", 0)),
+                gain=clip.get("gain", 1),
+            )
+        )
     result = tools.composer(
-        ComposeRequest(tuple(clips), req["width"], req["height"], req["fps"]), workdir,
+        ComposeRequest(
+            tuple(clips), req["width"], req["height"], req["fps"],
+            audio_clips=tuple(audio_clips),
+            audio_required=req.get("delivery_profile") == "reels_shorts",
+            max_duration_s=req.get("max_duration_s", 1800),
+        ), workdir,
         tools=tools.paths, limits=tools.limits, on_line=on_line, on_progress=on_progress,
         cancel=cancel,
     )  # fmt: skip
@@ -118,7 +140,13 @@ def run_composite(
     except PnpError as exc:
         return Finish("failed", str(exc), "probe_error", None, result.exit_code)
     meta = {k: req[k] for k in ("composition", "format", *_OUTPUT_KEYS) if k in req}
-    meta |= {"export_id": job.export_id, "job_id": job.id, "revision_id": job.revision_id}
+    meta |= {
+        "delivery_profile": req.get("delivery_profile", "custom"),
+        "has_narration": bool(voice),
+        "export_id": job.export_id,
+        "job_id": job.id,
+        "revision_id": job.revision_id,
+    }
     artifact = store.publish(
         result.output, kind="export", project=job.project, info=info, meta=meta
     )
